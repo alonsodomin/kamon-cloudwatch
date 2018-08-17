@@ -22,7 +22,7 @@ private[cloudwatch] object AmazonAsync {
     val promise: Promise[Res] = Promise[Res]
     val handler = new AsyncHandler[Req, Res] {
       override def onError(exception: Exception): Unit =
-        promise.failure(new CancellationException(s"AWS async command is cancelled."))
+        promise.failure(new CancellationException(s"AWS async command is cancelled: ${exception.getMessage}"))
       override def onSuccess(request: Req, result: Res): Unit = promise.complete(Try(result))
     }
     asyncOp(asyncArg, handler)
