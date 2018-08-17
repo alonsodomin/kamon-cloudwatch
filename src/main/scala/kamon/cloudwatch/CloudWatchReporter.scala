@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class Configuration(
+final case class Configuration(
   nameSpace: String,
   region: Option[String],
   batchSize: Int,

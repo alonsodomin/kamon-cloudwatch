@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
-object AmazonAsync {
+private[cloudwatch] object AmazonAsync {
 
   type MetricDatumBatch = Vector[MetricDatum]
 
