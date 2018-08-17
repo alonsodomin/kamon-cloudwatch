@@ -36,12 +36,15 @@ class CloudWatchReporter private (clock: Clock) extends MetricReporter {
   private val shipper: MetricsShipper = new MetricsShipper()
 
   override def start(): Unit = {
-    logger.info("Starting the Kamon CloudWatch reporter")
+    logger.info("Starting the Kamon CloudWatch reporter.")
     configuration.set(readConfiguration(Kamon.config()))
-    shipper.reconfigure(configuration.get)
+    shipper.reconfigure(configuration.get())
   }
 
-  override def stop(): Unit = {}
+  override def stop(): Unit = {
+    logger.info("Shutting down the Kamon CloudWatch reporter.")
+    shipper.shutdown()
+  }
 
   override def reconfigure(config: Config): Unit = {
     val current = configuration.get

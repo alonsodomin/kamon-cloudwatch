@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.util.control.NonFatal
 
 /**
   * Ship-and-forget. Let the future to process the actual shipment to Cloudwatch.
@@ -43,7 +44,17 @@ class MetricsShipper {
       chosenRegion.fold(baseBuilder)(baseBuilder.withRegion).build()
     }
 
-    client.set(clientFromConfig)
+    val oldClient = client.getAndSet(clientFromConfig)
+    if (oldClient != null) {
+      disposeClient(oldClient)
+    }
+  }
+
+  def shutdown(): Unit = {
+    val oldClient = client.getAndSet(null)
+    if (oldClient != null) {
+      disposeClient(oldClient)
+    }
   }
 
   def shipMetrics(nameSpace: String, datums: MetricDatumBatch)(implicit ec: ExecutionContext): Future[Unit] = {
@@ -54,6 +65,14 @@ class MetricsShipper {
         case error: Exception =>
           logger.warn(s"Failed to send metrics to Cloudwatch ${error.getMessage}")
       }
+  }
+
+  private[this] def disposeClient(client: AmazonCloudWatchAsync): Unit = {
+    try {
+      client.shutdown()
+    } catch {
+      case NonFatal(_) => // ignore exception
+    }
   }
 
 }
