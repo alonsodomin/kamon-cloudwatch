@@ -3,12 +3,12 @@ package kamon.cloudwatch
 import java.util.concurrent.{ExecutorService, Executors}
 import java.util.concurrent.atomic.AtomicReference
 
+import com.amazonaws.auth._
+import com.amazonaws.auth.profile._
 import com.amazonaws.client.builder.ExecutorFactory
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatchAsync, AmazonCloudWatchAsyncClientBuilder}
-
 import kamon.cloudwatch.AmazonAsync.{MetricDatumBatch, MetricsAsyncOps}
-
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,7 +18,17 @@ import scala.util.control.NonFatal
 /**
   * Ship-and-forget. Let the future to process the actual shipment to Cloudwatch.
   */
+
+private[cloudwatch] object MetricsShipper {
+    private[MetricsShipper] val DefaultAwsCredentialsProvider: AWSCredentialsProvider = new AWSCredentialsProviderChain(
+      new EnvironmentVariableCredentialsProvider,
+      new ProfileCredentialsProvider(),
+      InstanceProfileCredentialsProvider.getInstance(),
+      new EC2ContainerCredentialsProviderWrapper
+    )
+}
 private[cloudwatch] class MetricsShipper {
+  import MetricsShipper._
   private val logger = LoggerFactory.getLogger(classOf[MetricsShipper])
 
   // Kamon 1.0 requires to support hot-reconfiguration, which forces us to use an
@@ -36,6 +46,7 @@ private[cloudwatch] class MetricsShipper {
     // operating off a shared unbounded queue.
     def clientFromConfig: AmazonCloudWatchAsync = {
       val baseBuilder = AmazonCloudWatchAsyncClientBuilder.standard()
+        .withCredentials(DefaultAwsCredentialsProvider)
           .withExecutorFactory(new ExecutorFactory {
             override def newExecutor(): ExecutorService =
               Executors.newFixedThreadPool(configuration.numThreads)
