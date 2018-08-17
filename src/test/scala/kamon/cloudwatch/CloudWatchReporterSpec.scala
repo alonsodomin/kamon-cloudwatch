@@ -95,7 +95,7 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
 
         println(keyValuePairs)
 
-        MatchResult.of(params.forall { case (k,v) => keyValuePairs.get(k).contains(v) })
+        MatchResult.of(params.forall { case (k,v) => keyValuePairs.get(k).fold(false)(_ == v) })
       }
 
     }
