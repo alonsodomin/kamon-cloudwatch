@@ -55,15 +55,14 @@ object Configuration {
 }
 
 class CloudWatchReporter private (clock: Clock) extends MetricReporter {
+  private val logger = LoggerFactory.getLogger(classOf[CloudWatchReporter])
 
   def this() = this(Clock.systemUTC())
 
-  private val logger = LoggerFactory.getLogger(classOf[CloudWatchReporter])
-
-  private val configuration: AtomicReference[Configuration] =
+  private[this] val configuration: AtomicReference[Configuration] =
     new AtomicReference()
 
-  private val shipper: MetricsShipper = new MetricsShipper()
+  private[this] val shipper: MetricsShipper = new MetricsShipper()
 
   override def start(): Unit = {
     logger.info("Starting the Kamon CloudWatch reporter.")
@@ -97,7 +96,7 @@ class CloudWatchReporter private (clock: Clock) extends MetricReporter {
     }
   }
 
-  private def readConfiguration(config: Config): Configuration = {
+  private[this] def readConfiguration(config: Config): Configuration = {
     val cloudWatchConfig = config.getConfig("kamon.cloudwatch")
     Configuration.fromConfig(cloudWatchConfig)
   }
