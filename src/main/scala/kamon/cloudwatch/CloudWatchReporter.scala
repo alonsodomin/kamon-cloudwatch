@@ -54,8 +54,8 @@ object Configuration {
 
 }
 
-class CloudWatchReporter private (clock: Clock) extends MetricReporter {
-  private val logger = LoggerFactory.getLogger(classOf[CloudWatchReporter])
+class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReporter {
+  private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   def this() = this(Clock.systemUTC())
 

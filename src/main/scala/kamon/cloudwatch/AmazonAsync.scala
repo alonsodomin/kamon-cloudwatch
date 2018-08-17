@@ -12,11 +12,14 @@ import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatchAsync, AmazonCloudWatchAsyncClientBuilder}
 import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest}
 
+import org.slf4j.LoggerFactory
+
 import scala.collection.JavaConverters._
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
 private[cloudwatch] object AmazonAsync {
+  private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   private val DefaultAwsCredentialsProvider: AWSCredentialsProvider = new AWSCredentialsProviderChain(
     new EnvironmentVariableCredentialsProvider,
@@ -69,11 +72,15 @@ private[cloudwatch] object AmazonAsync {
 
   implicit class MetricsAsyncOps(data: MetricDatumBatch) {
 
-    def put(nameSpace: String)(implicit client: AmazonCloudWatchAsync): Future[AmazonWebServiceResult[ResponseMetadata]] =
+    def put(nameSpace: String)(
+      implicit client: AmazonCloudWatchAsync
+    ): Future[AmazonWebServiceResult[ResponseMetadata]] = {
+      logger.debug("Sending {} metrics to namespace {}.", data.size, nameSpace)
       asyncRequest(new PutMetricDataRequest()
         .withNamespace(nameSpace)
         .withMetricData(data.asJava)
       )(client.putMetricDataAsync)
+    }
 
   }
 }
