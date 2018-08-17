@@ -3,12 +3,12 @@ package kamon.cloudwatch
 import java.util.concurrent.{ExecutorService, Executors}
 import java.util.concurrent.atomic.AtomicReference
 
+import com.amazonaws.auth._
+import com.amazonaws.auth.profile._
 import com.amazonaws.client.builder.ExecutorFactory
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatchAsync, AmazonCloudWatchAsyncClientBuilder}
-
 import kamon.cloudwatch.AmazonAsync.{MetricDatumBatch, MetricsAsyncOps}
-
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,6 +18,15 @@ import scala.util.control.NonFatal
 /**
   * Ship-and-forget. Let the future to process the actual shipment to Cloudwatch.
   */
+
+private[cloudwatch] object MetricsShipper {
+    private[CloudWatchReporter] val DefaultAwsCredentialsProvider: AWSCredentialsProvider = new AWSCredentialsProviderChain(
+      new EnvironmentVariableCredentialsProvider,
+      new ProfileCredentialsProvider(),
+      InstanceProfileCredentialsProvider.getInstance(),
+      new EC2ContainerCredentialsProviderWrapper
+    )
+}
 private[cloudwatch] class MetricsShipper {
   private val logger = LoggerFactory.getLogger(classOf[MetricsShipper])
 
