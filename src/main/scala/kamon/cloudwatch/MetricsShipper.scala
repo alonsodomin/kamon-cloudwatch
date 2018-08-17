@@ -13,6 +13,8 @@ import scala.util.control.NonFatal
   * Ship-and-forget. Let the future to process the actual shipment to Cloudwatch.
   */
 private[cloudwatch] class MetricsShipper {
+  import AmazonAsync._
+
   private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   // Kamon 1.0 requires to support hot-reconfiguration, which forces us to use an
