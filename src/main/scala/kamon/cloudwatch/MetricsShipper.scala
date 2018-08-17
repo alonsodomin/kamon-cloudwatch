@@ -20,7 +20,7 @@ import scala.util.control.NonFatal
   */
 
 private[cloudwatch] object MetricsShipper {
-    private[CloudWatchReporter] val DefaultAwsCredentialsProvider: AWSCredentialsProvider = new AWSCredentialsProviderChain(
+    private[MetricsShipper] val DefaultAwsCredentialsProvider: AWSCredentialsProvider = new AWSCredentialsProviderChain(
       new EnvironmentVariableCredentialsProvider,
       new ProfileCredentialsProvider(),
       InstanceProfileCredentialsProvider.getInstance(),
@@ -28,6 +28,7 @@ private[cloudwatch] object MetricsShipper {
     )
 }
 private[cloudwatch] class MetricsShipper {
+  import MetricsShipper._
   private val logger = LoggerFactory.getLogger(classOf[MetricsShipper])
 
   // Kamon 1.0 requires to support hot-reconfiguration, which forces us to use an
@@ -45,6 +46,7 @@ private[cloudwatch] class MetricsShipper {
     // operating off a shared unbounded queue.
     def clientFromConfig: AmazonCloudWatchAsync = {
       val baseBuilder = AmazonCloudWatchAsyncClientBuilder.standard()
+        .withCredentials(DefaultAwsCredentialsProvider)
           .withExecutorFactory(new ExecutorFactory {
             override def newExecutor(): ExecutorService =
               Executors.newFixedThreadPool(configuration.numThreads)
