@@ -1,12 +1,12 @@
 package com.timeout.kamon.cloudwatch
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{ExecutorService, Executors}
 import java.util.concurrent.atomic.AtomicReference
 
+import com.amazonaws.client.builder.ExecutorFactory
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatchAsync, AmazonCloudWatchAsyncClientBuilder}
 import com.timeout.kamon.cloudwatch.AmazonAsync.{MetricDatumBatch, MetricsAsyncOps}
-
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,7 +33,10 @@ class MetricsShipper {
     // operating off a shared unbounded queue.
     def clientFromConfig: AmazonCloudWatchAsync = {
       val baseBuilder = AmazonCloudWatchAsyncClientBuilder.standard()
-          .withExecutorFactory(() => Executors.newFixedThreadPool(configuration.numThreads))
+          .withExecutorFactory(new ExecutorFactory {
+            override def newExecutor(): ExecutorService =
+              Executors.newFixedThreadPool(configuration.numThreads)
+          })
 
       chosenRegion.fold(baseBuilder)(baseBuilder.withRegion).build()
     }
