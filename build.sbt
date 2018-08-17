@@ -1,21 +1,28 @@
+/* =========================================================================================
+ * Copyright © 2013-2017 the kamon project <http://kamon.io/>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the
+ * License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions
+ * and limitations under the License.
+ * =========================================================================================
+ */
+
 name := "kamon-cloudwatch"
 
-organization := "com.timeout"
+val kamonVersion = "1.1.3"
+val kamonCore    = "io.kamon"      %% "kamon-core"              % kamonVersion
+val kamonTestkit = "io.kamon"      %% "kamon-testkit"           % kamonVersion
+val cloudwatch   = "com.amazonaws" %  "aws-java-sdk-cloudwatch" % "1.11.386"
 
-releaseCrossBuild := true
 
-licenses += ("MIT", url("https://opensource.org/licenses/MIT"))
+libraryDependencies ++=
+  compileScope(kamonCore, cloudwatch) ++
+  testScope(scalatest, kamonTestkit, slf4jApi, slf4jnop)
 
-//credentials += Credentials(Path.userHome / ".bintray" / ".credentials")
-
-//bintrayOrganization := Some("timeoutdigital")
-
-//bintrayRepository := "releases"
-
-libraryDependencies ++= Seq(
-  "io.kamon"      %% "kamon-core"              % "1.1.3",
-  "com.amazonaws" %  "aws-java-sdk-cloudwatch" % "1.11.386",
-  "org.scalatest" %% "scalatest"               % "3.0.5" % "test"
-)
-
-fork in Test := true
+resolvers += Resolver.bintrayRepo("kamon-io", "releases")

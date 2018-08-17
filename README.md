@@ -56,4 +56,4 @@ kamon {
 ![alt text](https://github.com/alonsodomin/kamon-cloudwatch/blob/master/doc/cloundwatch-metrics.png "what has showed up in Cloudwatch")
 
 # License
-- [MIT](https://github.com/alonsodomin/kamon-cloudwatch/blob/master/LICENSE "MIT")
+- [Apache V2](https://github.com/alonsodomin/kamon-cloudwatch/blob/master/LICENSE "MIT")

@@ -1,4 +1,4 @@
-package com.timeout.kamon.cloudwatch
+package kamon.cloudwatch
 
 import java.util.concurrent.{ExecutorService, Executors}
 import java.util.concurrent.atomic.AtomicReference
@@ -6,7 +6,9 @@ import java.util.concurrent.atomic.AtomicReference
 import com.amazonaws.client.builder.ExecutorFactory
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatchAsync, AmazonCloudWatchAsyncClientBuilder}
-import com.timeout.kamon.cloudwatch.AmazonAsync.{MetricDatumBatch, MetricsAsyncOps}
+
+import kamon.cloudwatch.AmazonAsync.{MetricDatumBatch, MetricsAsyncOps}
+
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

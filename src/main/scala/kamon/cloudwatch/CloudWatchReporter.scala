@@ -1,4 +1,4 @@
-package com.timeout.kamon.cloudwatch
+package kamon.cloudwatch
 
 import java.time.{Clock, Instant}
 import java.util.Date
@@ -6,10 +6,10 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.typesafe.config.Config
 import com.amazonaws.services.cloudwatch.model._
-import com.timeout.kamon.cloudwatch.AmazonAsync.MetricDatumBatch
 
 import kamon.{Kamon, MetricReporter, Tags}
 import kamon.metric.{MeasurementUnit, MetricDistribution, MetricValue, PeriodSnapshot}
+import kamon.cloudwatch.AmazonAsync.MetricDatumBatch
 
 import org.slf4j.LoggerFactory
 

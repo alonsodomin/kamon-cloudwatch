@@ -1,4 +1,4 @@
-package com.timeout.kamon.cloudwatch
+package kamon.cloudwatch
 
 import java.util.concurrent
 import java.util.concurrent.CancellationException
