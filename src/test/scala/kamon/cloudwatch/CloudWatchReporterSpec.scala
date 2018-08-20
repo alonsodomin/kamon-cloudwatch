@@ -43,19 +43,21 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
       .counter("foo", Map("tag" -> "mytag"), 23)
       .build()
 
-    reporter.reportPeriodSnapshot(snapshot)
-    Thread.sleep(10500)
+    val expectedInteraction = post("/")
+      .withRequestBody(cloudWatchBody(
+        "Action"                         -> "PutMetricData",
+        "Namespace"                      -> "kamon-cloudwatch-test",
+        "MetricData.member.1.MetricName" -> "foo",
+        "MetricData.member.1.Value"      -> "23.0",
+        "MetricData.member.1.Unit"       -> "Count"
+      )).willReturn(aResponse().withBody("{}").withStatus(200))
 
-    stub.verify(
-      postRequestedFor(urlEqualTo("/"))
-        .withRequestBody(cloudWatchBody(
-          "Action"                         -> "PutMetricData",
-          "Namespace"                      -> "kamon-cloudwatch-test",
-          "MetricData.member.1.MetricName" -> "foo",
-          "MetricData.member.1.Value"      -> "23.0",
-          "MetricData.member.1.Unit"       -> "Count"
-        ))
-    )
+    stub.givenThat(expectedInteraction)
+
+    reporter.reportPeriodSnapshot(snapshot)
+    Thread.sleep(1000)
+
+    stub.verify(postRequestedFor(urlEqualTo("/")))
   }
 
   class Fixture(config: Config) {
