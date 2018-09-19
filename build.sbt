@@ -18,7 +18,7 @@ name := "kamon-cloudwatch"
 val kamonVersion = "1.1.3"
 val kamonCore    = "io.kamon"               %% "kamon-core"              % kamonVersion
 val kamonTestkit = "io.kamon"               %% "kamon-testkit"           % kamonVersion
-val cloudwatch   = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.386"
+val cloudwatch   = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.411"
 val wiremock     = "com.github.tomakehurst" %  "wiremock"                % "2.18.0"
 
 
