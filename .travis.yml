@@ -9,6 +9,7 @@ cache:
   - $HOME/.ivy2
 
 script:
+- sbt +clean
 - sbt +test
 
 scala:
