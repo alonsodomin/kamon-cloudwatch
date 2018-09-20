@@ -13,7 +13,7 @@ _**Note:** This project has been initially forked from [Timeout's kamon-cloudwat
 - add library dependency to your build.sbt
 
 ```scala
-libraryDependencies += "com.timeout" %% "kamon-cloudwatch" % "0.0.3"
+libraryDependencies += "io.kamon" %% "kamon-cloudwatch" % "1.0.0"
 ```
 
 - load the reporter by Kamon
@@ -53,7 +53,7 @@ kamon {
 
 # AWS Cloudwatch Example
 - log on to Cloudwatch, the metrics will be appearing on 'Custom namespaces' section under "Metrics" menu, i.e.:
-![alt text](https://github.com/alonsodomin/kamon-cloudwatch/blob/master/doc/cloundwatch-metrics.png "what has showed up in Cloudwatch")
+![alt text](https://github.com/alonsodomin/kamon-cloudwatch/blob/master/doc/cloudwatch-metrics.jpg "what has showed up in Cloudwatch")
 
 # License
 - [Apache V2](https://github.com/alonsodomin/kamon-cloudwatch/blob/master/LICENSE "MIT")

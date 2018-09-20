@@ -21,19 +21,48 @@ final case class Configuration(
   region: Option[String],
   batchSize: Int,
   sendMetrics: Boolean,
-  numThreads: Int
+  numThreads: Int,
+  serviceEndpoint: Option[String]
 )
 
-class CloudWatchReporter private (clock: Clock) extends MetricReporter {
+object Configuration {
+
+  private object settings {
+    val Namespace       = "namespace"
+    val BatchSize       = "batch-size"
+    val Region          = "region"
+    val SendMetrics     = "send-metrics"
+    val NumThreads      = "async-threads"
+    val ServiceEndpoint = "service-endpoint"
+  }
+
+  def fromConfig(config: Config): Configuration = {
+    def opt[A](path: String, f: Config => A): Option[A] = {
+      if (config.hasPath(path)) Option(f(config))
+      else None
+    }
+
+    val nameSpace   = config.getString(settings.Namespace)
+    val region      = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
+    val batchSize   = config.getInt(settings.BatchSize)
+    val sendMetrics = config.getBoolean(settings.SendMetrics)
+    val numThreads  = config.getInt(settings.NumThreads)
+    val endpoint    = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint)).filterNot(_.isEmpty)
+
+    Configuration(nameSpace, region, batchSize, sendMetrics, numThreads, endpoint)
+  }
+
+}
+
+class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReporter {
+  private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   def this() = this(Clock.systemUTC())
 
-  private val logger = LoggerFactory.getLogger(classOf[CloudWatchReporter])
-
-  private val configuration: AtomicReference[Configuration] =
+  private[this] val configuration: AtomicReference[Configuration] =
     new AtomicReference()
 
-  private val shipper: MetricsShipper = new MetricsShipper()
+  private[this] val shipper: MetricsShipper = new MetricsShipper()
 
   override def start(): Unit = {
     logger.info("Starting the Kamon CloudWatch reporter.")
@@ -67,23 +96,9 @@ class CloudWatchReporter private (clock: Clock) extends MetricReporter {
     }
   }
 
-  private def readConfiguration(config: Config): Configuration = {
+  private[this] def readConfiguration(config: Config): Configuration = {
     val cloudWatchConfig = config.getConfig("kamon.cloudwatch")
-    val nameSpace = cloudWatchConfig.getString("namespace")
-
-    val region = {
-      val regionName = {
-        if (config.hasPath("region")) Option(cloudWatchConfig.getString("region"))
-        else None
-      }
-      regionName.filterNot(_.isEmpty)
-    }
-
-    val batchSize = cloudWatchConfig.getInt("batch-size")
-    val sendMetrics = cloudWatchConfig.getBoolean("send-metrics")
-    val numThreads = cloudWatchConfig.getInt("async-threads")
-
-    Configuration(nameSpace, region, batchSize, sendMetrics, numThreads)
+    Configuration.fromConfig(cloudWatchConfig)
   }
 
   /**
