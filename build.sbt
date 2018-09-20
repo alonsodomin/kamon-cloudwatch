@@ -35,7 +35,7 @@ val wiremock     = "com.github.tomakehurst" %  "wiremock"                % "2.18
 
 
 libraryDependencies ++=
-  compileScope(kamonCore, cloudwatch) ++ compileScope(jacksonDepdencencies: _*) ++
+  compileScope(Seq(kamonCore, cloudwatch) ++ jacksonDepdencencies: _*) ++
   testScope(scalatest, kamonTestkit, wiremock, slf4jApi, logbackClassic)
 
 resolvers += Resolver.bintrayRepo("kamon-io", "releases")
