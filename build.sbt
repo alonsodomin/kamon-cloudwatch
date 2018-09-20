@@ -16,7 +16,7 @@
 name := "kamon-cloudwatch"
 
 val kamonVersion = "1.1.3"
-val jacksonVersion = "2.9.7"
+val jacksonVersion = "2.9.6"
 val kamonCore    = "io.kamon"               %% "kamon-core"              % kamonVersion
 val kamonTestkit = "io.kamon"               %% "kamon-testkit"           % kamonVersion
 val cloudwatch   = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.411" excludeAll(
