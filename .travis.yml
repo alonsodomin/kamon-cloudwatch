@@ -12,6 +12,10 @@ script:
 - sbt +clean
 - sbt +test
 
+env:
+- AWS_SECRET_ACCESS_KEY=foo
+- AWS_ACCESS_KEY_ID=bar
+
 scala:
 - 2.11.8
 
