@@ -55,7 +55,7 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
     stub.givenThat(expectedInteraction)
 
     reporter.reportPeriodSnapshot(snapshot)
-    Thread.sleep(1000)
+    Thread.sleep(5000)
 
     stub.verify(postRequestedFor(urlEqualTo("/")))
   }
