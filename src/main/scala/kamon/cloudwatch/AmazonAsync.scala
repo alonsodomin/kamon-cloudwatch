@@ -28,8 +28,6 @@ private[cloudwatch] object AmazonAsync {
     new EC2ContainerCredentialsProviderWrapper
   )
 
-  type MetricDatumBatch = Vector[MetricDatum]
-
   def buildClient(configuration: Configuration): AmazonCloudWatchAsync = {
     val chosenRegion: Option[Regions] = {
       configuration.region

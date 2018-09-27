@@ -53,3 +53,7 @@ class PeriodSnapshotBuilder extends MetricInspection {
     PeriodSnapshot(_from, _to, MetricsSnapshot(_histograms, _rangeSamplers, _gauges, _counters))
 
 }
+
+object PeriodSnapshotBuilder {
+  def apply(): PeriodSnapshotBuilder = new PeriodSnapshotBuilder
+}
