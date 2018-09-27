@@ -39,7 +39,7 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
   }
 
   "the reporter" should "publish metrics" in withCloudWatch(TestConfig) { (stub, reporter) =>
-    val snapshot = new PeriodSnapshotBuilder()
+    val snapshot = PeriodSnapshotBuilder()
       .counter("foo", Map("tag" -> "mytag"), 23)
       .build()
 
