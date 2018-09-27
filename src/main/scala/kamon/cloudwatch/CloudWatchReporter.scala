@@ -85,7 +85,7 @@ class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReport
     val config = configuration.get
 
     if (config.sendMetrics) {
-      val metrics = datums(snapshot)(clock)
+      val metrics = datums(snapshot)
       metrics.grouped(config.batchSize).foreach(batch =>
         shipper.shipMetrics(config.nameSpace, batch)
       )

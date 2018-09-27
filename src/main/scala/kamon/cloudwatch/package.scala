@@ -1,6 +1,5 @@
 package kamon
 
-import java.time.{Clock, Instant}
 import java.util.Date
 
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, StandardUnit, StatisticSet}
@@ -19,7 +18,7 @@ package object cloudwatch {
     * https://github.com/philwill-nap/Kamon/blob/master/kamon-cloudwatch/
     * src/main/scala/kamon/cloudwatch/CloudWatchMetricsSender.scala
     */
-  private[cloudwatch] def datums(snapshot: PeriodSnapshot)(implicit clock: Clock): MetricDatumBatch = {
+  private[cloudwatch] def datums(snapshot: PeriodSnapshot): MetricDatumBatch = {
     def unitAndScale(unit: MeasurementUnit): (StandardUnit, Double) = {
       import MeasurementUnit.Dimension._
       import MeasurementUnit.{information, time}
@@ -56,7 +55,7 @@ package object cloudwatch {
       new MetricDatum()
         .withDimensions(dimensions.asJava)
         .withMetricName(name)
-        .withTimestamp(Date.from(Instant.now(clock)))
+        .withTimestamp(Date.from(snapshot.to))
         .withUnit(unit)
     }
 
