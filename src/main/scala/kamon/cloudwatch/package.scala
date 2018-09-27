@@ -24,6 +24,8 @@ package object cloudwatch {
       import MeasurementUnit.{information, time}
 
       unit.dimension match {
+        case Percentage => StandardUnit.Percent -> 1.0
+
         case Time if unit.magnitude == time.seconds.magnitude =>
           StandardUnit.Seconds -> 1.0
         case Time if unit.magnitude == time.milliseconds.magnitude =>

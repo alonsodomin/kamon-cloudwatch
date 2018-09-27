@@ -3,6 +3,10 @@ package kamon.cloudwatch
 import java.time.Instant
 import java.util.Date
 
+import com.amazonaws.services.cloudwatch.model.StandardUnit
+
+import kamon.metric.MeasurementUnit
+
 import org.scalatest.{FlatSpec, Matchers}
 
 class DatumConversionSpec extends FlatSpec with Matchers {
@@ -28,6 +32,16 @@ class DatumConversionSpec extends FlatSpec with Matchers {
     val convertedDatums = datums(snapshot)
     convertedDatums.size shouldBe 1
     convertedDatums(0).getTimestamp shouldBe Date.from(givenInstant)
+  }
+
+  it must "populate percentages" in {
+    val snapshot = PeriodSnapshotBuilder()
+      .counter("foo", Map.empty, 39, MeasurementUnit.percentage)
+      .build()
+
+    val convertedDatums = datums(snapshot)
+    convertedDatums.size shouldBe 1
+    convertedDatums(0).getUnit shouldBe StandardUnit.Percent.toString
   }
 
 }

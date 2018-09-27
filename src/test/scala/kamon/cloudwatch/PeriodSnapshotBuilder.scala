@@ -24,13 +24,13 @@ class PeriodSnapshotBuilder extends MetricInspection {
     this
   }
 
-  def counter(name: String, tags: Map[String, String], value: Long): PeriodSnapshotBuilder = {
-    _counters = _counters :+ MetricValue(name, tags, MeasurementUnit.none, value)
+  def counter(name: String, tags: Map[String, String], value: Long, unit: MeasurementUnit = MeasurementUnit.none): PeriodSnapshotBuilder = {
+    _counters = _counters :+ MetricValue(name, tags, unit, value)
     this
   }
 
-  def gauge(name: String, tags: Map[String, String], value: Long): PeriodSnapshotBuilder = {
-    _gauges = _gauges :+ MetricValue(name, tags, MeasurementUnit.none, value)
+  def gauge(name: String, tags: Map[String, String], value: Long, unit: MeasurementUnit = MeasurementUnit.none): PeriodSnapshotBuilder = {
+    _gauges = _gauges :+ MetricValue(name, tags, unit, value)
     this
   }
 
