@@ -16,14 +16,26 @@
 name := "kamon-cloudwatch"
 
 val kamonVersion = "1.1.3"
+val jacksonVersion = "2.9.6"
 val kamonCore    = "io.kamon"               %% "kamon-core"              % kamonVersion
 val kamonTestkit = "io.kamon"               %% "kamon-testkit"           % kamonVersion
-val cloudwatch   = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.411"
+val cloudwatch   = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.411" excludeAll(
+  ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
+  ExclusionRule("com.fasterxml.jackson.core", "jackson-core"),
+  ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
+  ExclusionRule("com.fasterxml.jackson.dataformat", "jackson-dataformat-cbor")
+)
+val jacksonDepdencencies = Seq(
+  "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion,
+  "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-cbor" % jacksonVersion
+)
 val wiremock     = "com.github.tomakehurst" %  "wiremock"                % "2.18.0"
 
 
 libraryDependencies ++=
-  compileScope(kamonCore, cloudwatch) ++
+  compileScope(Seq(kamonCore, cloudwatch) ++ jacksonDepdencencies: _*) ++
   testScope(scalatest, kamonTestkit, wiremock, slf4jApi, logbackClassic)
 
 resolvers += Resolver.bintrayRepo("kamon-io", "releases")
