@@ -50,15 +50,20 @@ package object cloudwatch {
 
     def datum(name: String, tags: Tags, unit: StandardUnit): MetricDatum = {
       val dimensions: List[Dimension] =
-        tags.map {
+        tags.filter {
+          case (tagName, tagValue) => !tagName.isEmpty && !tagValue.isEmpty
+        }.map {
           case (tagName, tagValue) => new Dimension().withName(tagName).withValue(tagValue)
         }.toList
 
-      new MetricDatum()
-        .withDimensions(dimensions.asJava)
+      val baseDatum = new MetricDatum()
         .withMetricName(name)
         .withTimestamp(Date.from(snapshot.to))
         .withUnit(unit)
+
+      if (dimensions.nonEmpty) {
+        baseDatum.withDimensions(dimensions.asJava)
+      } else baseDatum
     }
 
     def datumFromDistribution(metric: MetricDistribution): Option[MetricDatum] = {
