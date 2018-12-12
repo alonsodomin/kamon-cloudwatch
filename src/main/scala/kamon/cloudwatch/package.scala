@@ -18,7 +18,7 @@ package object cloudwatch {
     * https://github.com/philwill-nap/Kamon/blob/master/kamon-cloudwatch/
     * src/main/scala/kamon/cloudwatch/CloudWatchMetricsSender.scala
     */
-  private[cloudwatch] def datums(snapshot: PeriodSnapshot): MetricDatumBatch = {
+  private[cloudwatch] def datums(snapshot: PeriodSnapshot, baseTags: Tags): MetricDatumBatch = {
     def unitAndScale(unit: MeasurementUnit): (StandardUnit, Double) = {
       import MeasurementUnit.Dimension._
       import MeasurementUnit.{information, time}
@@ -50,7 +50,7 @@ package object cloudwatch {
 
     def datum(name: String, tags: Tags, unit: StandardUnit): MetricDatum = {
       val dimensions: List[Dimension] =
-        tags.filter {
+        (baseTags ++ tags).filter {
           case (tagName, tagValue) => !tagName.isEmpty && !tagValue.isEmpty
         }.map {
           case (tagName, tagValue) => new Dimension().withName(tagName).withValue(tagValue)

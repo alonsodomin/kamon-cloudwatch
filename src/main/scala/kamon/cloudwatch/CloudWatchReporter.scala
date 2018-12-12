@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.typesafe.config.Config
 
-import kamon.{Kamon, MetricReporter}
+import kamon.{Kamon, MetricReporter, Tags}
 import kamon.metric.PeriodSnapshot
 
 import org.slf4j.LoggerFactory
@@ -18,18 +18,20 @@ final case class Configuration(
   batchSize: Int,
   sendMetrics: Boolean,
   numThreads: Int,
-  serviceEndpoint: Option[String]
+  serviceEndpoint: Option[String],
+  includeEnvironmentTags: Boolean
 )
 
 object Configuration {
 
   private object settings {
-    val Namespace       = "namespace"
-    val BatchSize       = "batch-size"
-    val Region          = "region"
-    val SendMetrics     = "send-metrics"
-    val NumThreads      = "async-threads"
-    val ServiceEndpoint = "service-endpoint"
+    val Namespace              = "namespace"
+    val BatchSize              = "batch-size"
+    val Region                 = "region"
+    val SendMetrics            = "send-metrics"
+    val NumThreads             = "async-threads"
+    val ServiceEndpoint        = "service-endpoint"
+    val IncludeEnvironmentTags = "include-environment-tags"
   }
 
   def fromConfig(config: Config): Configuration = {
@@ -38,14 +40,15 @@ object Configuration {
       else None
     }
 
-    val nameSpace   = config.getString(settings.Namespace)
-    val region      = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
-    val batchSize   = config.getInt(settings.BatchSize)
-    val sendMetrics = config.getBoolean(settings.SendMetrics)
-    val numThreads  = config.getInt(settings.NumThreads)
-    val endpoint    = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint)).filterNot(_.isEmpty)
+    val nameSpace      = config.getString(settings.Namespace)
+    val region         = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
+    val batchSize      = config.getInt(settings.BatchSize)
+    val sendMetrics    = config.getBoolean(settings.SendMetrics)
+    val numThreads     = config.getInt(settings.NumThreads)
+    val endpoint       = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint)).filterNot(_.isEmpty)
+    val includeEnvTags = opt(settings.IncludeEnvironmentTags, _.getBoolean(settings.IncludeEnvironmentTags)).getOrElse(false)
 
-    Configuration(nameSpace, region, batchSize, sendMetrics, numThreads, endpoint)
+    Configuration(nameSpace, region, batchSize, sendMetrics, numThreads, endpoint, includeEnvTags)
   }
 
 }
@@ -85,7 +88,7 @@ class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReport
     val config = configuration.get
 
     if (config.sendMetrics) {
-      val metrics = datums(snapshot)
+      val metrics = datums(snapshot, CloudWatchReporter.environmentTags(config))
       metrics.grouped(config.batchSize).foreach(batch =>
         shipper.shipMetrics(config.nameSpace, batch)
       )
@@ -95,6 +98,14 @@ class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReport
   private[this] def readConfiguration(config: Config): Configuration = {
     val cloudWatchConfig = config.getConfig("kamon.cloudwatch")
     Configuration.fromConfig(cloudWatchConfig)
+  }
+
+}
+
+object CloudWatchReporter {
+
+  private def environmentTags(config: Configuration): Tags = {
+    if (config.includeEnvironmentTags) Kamon.environment.tags else Map.empty
   }
 
 }

@@ -45,6 +45,9 @@ kamon {
 
     # how many threads will be assigned to the pool that does the shipment of metrics
     async-threads = 5
+    
+    # whether to add Kamon environment tags to each of the metrics
+    include-environment-tags = false
   }
 }
 ```
