@@ -31,10 +31,6 @@ publishTo := Some(
 
 pomExtra := 
   <url>https://www.github.com/alonsodomin/kamon-cloudwatch</url>
-  <scm>
-    <url>git://github.com/alonsodomin/kamon-cloudwatch.git</url>
-    <connection>scm:git:git@github.com:alonsodomin/kamon-cloudwatch.git</connection>
-  </scm>
   <developers>
     <developer>
       <id>alonsodomin</id>
