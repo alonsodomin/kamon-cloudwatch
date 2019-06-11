@@ -21,7 +21,6 @@ startYear := Some(2018)
 organization := "com.github.alonsodomin"
 organizationName := "A. Alonso Dominguez"
 
-disablePlugins(BintrayPlugin)
 bintrayOrganization := None
 sonatypeProfileName := "com.github.alonsodomin"
 
