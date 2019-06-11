@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/alonsodomin/kamon-cloudwatch.svg?branch=master)](https://travis-ci.org/alonsodomin/kamon-cloudwatch)
 [![GitHub release](https://img.shields.io/github/tag/alonsodomin/kamon-cloudwatch.svg)](https://github.com/alonsodomin/kamon-cloudwatch/releases)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.alonsodomin/kamon-cloudwatch/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.alonsodomin/kamon-cloudwatch)
 
 ## Overview
 
@@ -13,7 +14,7 @@ _**Note:** This project has been initially forked from [Timeout's kamon-cloudwat
 - add library dependency to your build.sbt
 
 ```scala
-libraryDependencies += "io.kamon" %% "kamon-cloudwatch" % "1.0.0"
+libraryDependencies += "com.github.alonsodomin" %% "kamon-cloudwatch" % "1.0.0"
 ```
 
 - load the reporter by Kamon
