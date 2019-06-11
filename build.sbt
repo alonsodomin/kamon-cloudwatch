@@ -12,13 +12,18 @@
  * and limitations under the License.
  * =========================================================================================
  */
+import ReleaseTransformations._
 
 name := "kamon-cloudwatch"
-
-disablePlugins(BintrayPlugin)
+description := "Kamon extension to publish metrics into AWS CloudWatch"
+startYear := Some(2018)
 
 organization := "com.github.alonsodomin"
+organizationName := "A. Alonso Dominguez"
+
+disablePlugins(BintrayPlugin)
 bintrayOrganization := None
+sonatypeProfileName := "com.github.alonsodomin"
 
 publishTo := Some(
   if (isSnapshot.value) Opts.resolver.sonatypeSnapshots
@@ -38,6 +43,23 @@ pomExtra :=
       <url>https://github.com/alonsodomin</url>
     </developer>
   </developers>
+
+releaseCrossBuild := true
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  releaseStepCommandAndRemaining("+test"),
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  releaseStepCommandAndRemaining("+publishSigned"),
+  setNextVersion,
+  commitNextVersion,
+  releaseStepCommand("sonatypeReleaseAll"),
+  pushChanges
+)
 
 val kamonVersion   = "1.1.3"
 val jacksonVersion = "2.9.6"
