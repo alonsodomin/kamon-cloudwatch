@@ -17,7 +17,8 @@ scala:
 - 2.13.0
 
 jdk:
-- oraclejdk8
+- openjdk8
+- openjdk11
 
 before_script:
 - export AWS_SECRET_KEY=foo
