@@ -6,11 +6,16 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.{givenThat => _, _}
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.junit.Stubbing
-import com.github.tomakehurst.wiremock.matching.{StringValuePattern, MatchResult}
+import com.github.tomakehurst.wiremock.matching.{MatchResult, StringValuePattern}
+
 import com.typesafe.config.{Config, ConfigFactory}
+
+import kamon.tag.TagSet
+import kamon.testkit.MetricSnapshotBuilder
+
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object CloudWatchReporterSpec {
   final val TestClock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
@@ -40,7 +45,7 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
 
   "the reporter" should "publish metrics" in withCloudWatch(TestConfig) { (stub, reporter) =>
     val snapshot = PeriodSnapshotBuilder()
-      .counter("foo", Map("tag" -> "mytag"), 23)
+      .withCounter(MetricSnapshotBuilder.counter("foo", TagSet.of("tag", "mytag"), 23))
       .build()
 
     val expectedInteraction = post("/")

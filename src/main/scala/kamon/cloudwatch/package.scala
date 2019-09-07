@@ -4,9 +4,10 @@ import java.util.Date
 
 import com.amazonaws.services.cloudwatch.model.{Dimension, MetricDatum, StandardUnit, StatisticSet}
 
-import kamon.metric.{MeasurementUnit, MetricDistribution, MetricValue, PeriodSnapshot}
+import kamon.metric.{Distribution, MeasurementUnit, Metric, MetricSnapshot, PeriodSnapshot}
+import kamon.tag.{Tag, TagSet}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 package object cloudwatch {
 
@@ -18,7 +19,7 @@ package object cloudwatch {
     * https://github.com/philwill-nap/Kamon/blob/master/kamon-cloudwatch/
     * src/main/scala/kamon/cloudwatch/CloudWatchMetricsSender.scala
     */
-  private[cloudwatch] def datums(snapshot: PeriodSnapshot, baseTags: Tags): MetricDatumBatch = {
+  private[cloudwatch] def datums(snapshot: PeriodSnapshot, baseTags: TagSet): MetricDatumBatch = {
     def unitAndScale(unit: MeasurementUnit): (StandardUnit, Double) = {
       import MeasurementUnit.Dimension._
       import MeasurementUnit.{information, time}
@@ -48,12 +49,10 @@ package object cloudwatch {
       }
     }
 
-    def datum(name: String, tags: Tags, unit: StandardUnit): MetricDatum = {
+    def datum(name: String, tags: TagSet, unit: StandardUnit): MetricDatum = {
       val dimensions: List[Dimension] =
-        (baseTags ++ tags).filter {
-          case (tagName, tagValue) => !tagName.isEmpty && !tagValue.isEmpty
-        }.map {
-          case (tagName, tagValue) => new Dimension().withName(tagName).withValue(tagValue)
+        (baseTags withTags tags).iterator().map { tag =>
+          new Dimension().withName(tag.key).withValue(Tag.unwrapValue(tag).toString)
         }.toList
 
       val baseDatum = new MetricDatum()
@@ -66,32 +65,33 @@ package object cloudwatch {
       } else baseDatum
     }
 
-    def datumFromDistribution(metric: MetricDistribution): Option[MetricDatum] = {
-      if (metric.distribution.count == 0) None
-      else Some {
-        val (unit, scale) = unitAndScale(metric.unit)
+    def datumFromDistribution(distSnap: MetricSnapshot[Metric.Settings.ForDistributionInstrument, Distribution]): Seq[MetricDatum] = {
+      val (unit, scale) = unitAndScale(distSnap.settings.unit)
+      distSnap.instruments.filter(_.value.count > 0).map { snap =>
         val statSet = new StatisticSet()
-          .withMaximum(metric.distribution.max.toDouble * scale)
-          .withMinimum(metric.distribution.min.toDouble * scale)
-          .withSampleCount(metric.distribution.count.toDouble)
-          .withSum(metric.distribution.sum.toDouble * scale)
+          .withMaximum(snap.value.max.toDouble * scale)
+          .withMinimum(snap.value.min.toDouble * scale)
+          .withSampleCount(snap.value.count.toDouble)
+          .withSum(snap.value.sum.toDouble * scale)
 
-        datum(metric.name, metric.tags, unit)
-          .withStatisticValues(statSet)
+        datum(distSnap.name, snap.tags, unit).withStatisticValues(statSet)
       }
     }
 
-    def datumFromValue(metric: MetricValue): MetricDatum = {
-      val (unit, scale) = unitAndScale(metric.unit)
-      datum(metric.name, metric.tags, unit)
-        .withValue(metric.value.toDouble * scale)
+    def datumFromValue[T](valueSnap: MetricSnapshot[Metric.Settings.ForValueInstrument, T])(implicit T: Numeric[T]): Seq[MetricDatum] = {
+      val (unit, scale) = unitAndScale(valueSnap.settings.unit)
+
+      valueSnap.instruments.map { snap =>
+        datum(valueSnap.name, snap.tags, unit)
+          .withValue(T.toDouble(snap.value) * scale)
+      }
     }
 
     val allDatums =
-      snapshot.metrics.histograms.view.flatMap(datumFromDistribution) ++
-      snapshot.metrics.rangeSamplers.flatMap(datumFromDistribution) ++
-      snapshot.metrics.gauges.view.map(datumFromValue) ++
-      snapshot.metrics.counters.view.map(datumFromValue)
+      snapshot.histograms.view.flatMap(datumFromDistribution) ++
+      snapshot.rangeSamplers.flatMap(datumFromDistribution) ++
+      snapshot.gauges.view.flatMap(datumFromValue[Double]) ++
+      snapshot.counters.view.flatMap(datumFromValue[Long])
 
     allDatums.toVector
   }
