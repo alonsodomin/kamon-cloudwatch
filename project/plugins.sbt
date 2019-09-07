@@ -3,3 +3,4 @@ lazy val latestSbtUmbrella = RootProject(uri("git://github.com/kamon-io/kamon-sb
 
 addSbtPlugin("com.jsuereth"   % "sbt-pgp"      % "1.1.2")
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "3.6")
+addSbtPlugin("com.dwijnand"   % "sbt-travisci" % "1.2.0")
