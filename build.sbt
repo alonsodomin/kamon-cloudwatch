@@ -56,12 +56,12 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges
 )
 
-val kamonVersion   = "1.1.3"
+val kamonVersion   = "2.0.0"
 val jacksonVersion = "2.9.6"
 val kamonCore      = "io.kamon"               %% "kamon-core"              % kamonVersion
 val kamonTestkit   = "io.kamon"               %% "kamon-testkit"           % kamonVersion
-val cloudwatch     = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.411" 
-val wiremock       = "com.github.tomakehurst" %  "wiremock"                % "2.18.0"
+val cloudwatch     = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.627" 
+val wiremock       = "com.github.tomakehurst" %  "wiremock"                % "2.24.1"
 
 
 libraryDependencies ++=
