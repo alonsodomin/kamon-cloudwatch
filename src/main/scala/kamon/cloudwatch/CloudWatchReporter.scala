@@ -5,8 +5,10 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.typesafe.config.Config
 
-import kamon.{Kamon, MetricReporter, Tags}
+import kamon.Kamon
+import kamon.module.{ModuleFactory, MetricReporter}
 import kamon.metric.PeriodSnapshot
+import kamon.tag.TagSet
 
 import org.slf4j.LoggerFactory
 
@@ -53,7 +55,11 @@ object Configuration {
 
 }
 
-class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReporter {
+final class CloudWatchModuleFactory extends ModuleFactory {
+  override def create(settings: ModuleFactory.Settings): CloudWatchReporter = new CloudWatchReporter()
+}
+
+final class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReporter {
   private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   def this() = this(Clock.systemUTC())
@@ -63,7 +69,7 @@ class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReport
 
   private[this] val shipper: MetricsShipper = new MetricsShipper()
 
-  override def start(): Unit = {
+  def start(): Unit = {
     logger.info("Starting the Kamon CloudWatch reporter.")
     configuration.set(readConfiguration(Kamon.config()))
     shipper.reconfigure(configuration.get())
@@ -104,8 +110,8 @@ class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReport
 
 object CloudWatchReporter {
 
-  private def environmentTags(config: Configuration): Tags = {
-    if (config.includeEnvironmentTags) Kamon.environment.tags else Map.empty
+  private def environmentTags(config: Configuration): TagSet = {
+    if (config.includeEnvironmentTags) Kamon.environment.tags else TagSet.Empty
   }
 
 }

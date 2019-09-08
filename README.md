@@ -10,23 +10,37 @@ A simple [Kamon](https://github.com/kamon-io/Kamon) extension to ship metrics da
 
 _**Note:** This project has been initially forked from [Timeout's kamon-cloudwatch](https://github.com/timeoutdigital/kamon-cloudwatch) but evolved separately as the original one has fallen out of maintenance._
 
-## Installation
-- add library dependency to your build.sbt
+## Version Compatibility Matrix
+
+The following table maps Kamon core version with the version of this library:
+
+| Kamon Core | Kamon CloudWatch | Scala          | JDK  |
+|-----------:| ----------------:| --------------:|-----:|
+|      1.0.0 |            1.0.0 | 2.10,2.11,2.12 | 1.8+ |
+|      2.0.0 |            1.1.0 | 2.11,2.12,2.13 | 1.8+ |
+
+## Getting Started
+
+Add library dependency to your `build.sbt`
 
 ```scala
-libraryDependencies += "com.github.alonsodomin" %% "kamon-cloudwatch" % "1.0.0"
+libraryDependencies += "com.github.alonsodomin" %% "kamon-cloudwatch" % "<version>"
 ```
 
-- load the reporter by Kamon
+The module will be loaded automatically by Kamon 2.x. If using Kamon 1.x, you will need to register it manually:
 
 ```scala
 val reporter = new CloudWatchReporter()
 Kamon.addReporter(reporter)
 ```
 
-- make sure you have `AWS_PROFILE` or `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` pair set correctly.
+You should see "_Starting the Kamon CloudWatch extension_" in your log output.
 
-- add the following to your application.conf and change the fields accordingly:
+Be sure the box in which this is going to be used, has the proper access credentials to send data to AWS CloudWatch. The preferred approach would be to either use an _InstanceProfile_ or roles in the case of ECS/Docker Containers. Another way would be to have the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set correctly.
+
+## Configuration
+
+You can configure the module behaviour by overriding any of the following settings in your `application.conf` file:
 
 ```
 kamon {
@@ -52,8 +66,6 @@ kamon {
   }
 }
 ```
-
-- module should start when Kamon is started, you should see "Starting the Kamon CloudWatch extension" in your console output.
 
 # AWS Cloudwatch Example
 - log on to Cloudwatch, the metrics will be appearing on 'Custom namespaces' section under "Metrics" menu, i.e.:

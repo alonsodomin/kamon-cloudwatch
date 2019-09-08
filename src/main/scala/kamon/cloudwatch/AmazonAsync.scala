@@ -10,11 +10,11 @@ import com.amazonaws.client.builder.ExecutorFactory
 import com.amazonaws.handlers.AsyncHandler
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.cloudwatch.{AmazonCloudWatchAsync, AmazonCloudWatchAsyncClientBuilder}
-import com.amazonaws.services.cloudwatch.model.{MetricDatum, PutMetricDataRequest}
+import com.amazonaws.services.cloudwatch.model.PutMetricDataRequest
 
 import org.slf4j.LoggerFactory
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{Future, Promise}
 import scala.util.Try
 

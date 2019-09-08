@@ -1,18 +1,21 @@
 package kamon.cloudwatch
 
-import java.time.Instant
+import java.time.{Duration, Instant}
 
 import kamon.Kamon
 import kamon.metric._
+import kamon.tag.TagSet
 import kamon.testkit.MetricInspection
 
-class PeriodSnapshotBuilder extends MetricInspection {
+class PeriodSnapshotBuilder {
+
   private var _from: Instant = Instant.ofEpochSecond(1)
   private var _to: Instant = Instant.ofEpochSecond(2)
-  private var _counters: Seq[MetricValue] = Seq.empty
-  private var _gauges: Seq[MetricValue] = Seq.empty
-  private var _histograms: Seq[MetricDistribution] = Seq.empty
-  private var _rangeSamplers: Seq[MetricDistribution] = Seq.empty
+  private var _counters: Vector[MetricSnapshot.Values[Long]] = Vector.empty
+  private var _gauges: Vector[MetricSnapshot.Values[Double]] = Vector.empty
+  private var _histograms: Vector[MetricSnapshot.Distributions] = Vector.empty
+  private var _timers: Vector[MetricSnapshot.Distributions] = Vector.empty
+  private var _rangeSamplers: Vector[MetricSnapshot.Distributions] = Vector.empty
 
   def from(instant: Instant): PeriodSnapshotBuilder = {
     this._from = instant
@@ -24,33 +27,29 @@ class PeriodSnapshotBuilder extends MetricInspection {
     this
   }
 
-  def counter(name: String, tags: Map[String, String], value: Long, unit: MeasurementUnit = MeasurementUnit.none): PeriodSnapshotBuilder = {
-    _counters = _counters :+ MetricValue(name, tags, unit, value)
+  def withCounter(counter: MetricSnapshot.Values[Long]): PeriodSnapshotBuilder = {
+    _counters = _counters :+ counter
     this
   }
 
-  def gauge(name: String, tags: Map[String, String], value: Long, unit: MeasurementUnit = MeasurementUnit.none): PeriodSnapshotBuilder = {
-    _gauges = _gauges :+ MetricValue(name, tags, unit, value)
+  def withGauge(gauge: MetricSnapshot.Values[Double]): PeriodSnapshotBuilder = {
+    _gauges = _gauges :+ gauge
     this
   }
 
-  def histogram(name: String, tags: Map[String, String], values: Long*): PeriodSnapshotBuilder = {
-    val temp = Kamon.histogram("temp")
-    values.foreach(v => temp.record(v))
-    _histograms = _histograms :+ MetricDistribution(name, tags, MeasurementUnit.time.nanoseconds, DynamicRange.Default, temp.distribution())
+  def withHistogram(histogram: MetricSnapshot.Distributions): PeriodSnapshotBuilder = {
+    _histograms = _histograms :+ histogram
     this
   }
 
-  def rangeSampler(name: String, tags: Map[String, String], values: Long*): PeriodSnapshotBuilder = {
-    val temp = Kamon.histogram("temp")
-    values.foreach(v => temp.record(v))
-    _rangeSamplers = _rangeSamplers :+ MetricDistribution(name, tags, MeasurementUnit.time.nanoseconds, DynamicRange.Default, temp.distribution())
+  def withRangeSampler(sampler: MetricSnapshot.Distributions): PeriodSnapshotBuilder = {
+    _rangeSamplers = _rangeSamplers :+ sampler
     this
   }
 
 
   def build(): PeriodSnapshot =
-    PeriodSnapshot(_from, _to, MetricsSnapshot(_histograms, _rangeSamplers, _gauges, _counters))
+    PeriodSnapshot(_from, _to, _counters, _gauges, _histograms, _timers, _rangeSamplers)
 
 }
 
