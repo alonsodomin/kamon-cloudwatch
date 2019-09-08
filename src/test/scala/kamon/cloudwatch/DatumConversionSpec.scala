@@ -11,7 +11,7 @@ import kamon.testkit.MetricSnapshotBuilder
 
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class DatumConversionSpec extends FlatSpec with Matchers {
 
