@@ -10,14 +10,14 @@ A simple [Kamon](https://github.com/kamon-io/Kamon) extension to ship metrics da
 
 _**Note:** This project has been initially forked from [Timeout's kamon-cloudwatch](https://github.com/timeoutdigital/kamon-cloudwatch) but evolved separately as the original one has fallen out of maintenance._
 
-## Compatibility Matrix
+## Version Compatibility Matrix
 
 The following table maps Kamon core version with the version of this library:
 
-| Kamon Core | Kamon CloudWatch |
-|-----------:| ----------------:|
-|      1.0.0 |            1.0.0 |
-|      2.0.0 |            1.1.0 |
+| Kamon Core | Kamon CloudWatch | Scala          | JDK  |
+|-----------:| ----------------:| --------------:|-----:|
+|      1.0.0 |            1.0.0 | 2.10,2.11,2.12 | 1.8+ |
+|      2.0.0 |            1.1.0 | 2.11,2.12,2.13 | 1.8+ |
 
 ## Getting Started
 
