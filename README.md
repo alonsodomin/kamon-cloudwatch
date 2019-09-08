@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/alonsodomin/kamon-cloudwatch.svg?branch=master)](https://travis-ci.org/alonsodomin/kamon-cloudwatch)
 [![GitHub release](https://img.shields.io/github/tag/alonsodomin/kamon-cloudwatch.svg)](https://github.com/alonsodomin/kamon-cloudwatch/releases)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.alonsodomin/kamon-cloudwatch_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.alonsodomin/kamon-cloudwatch_2.12)
+[![Mergify Status][https://img.shields.io/endpoint.svg?url=https://gh.mergify.io/badges/alonsodomin/kamon-cloudwatch&style=flat]][https://mergify.io]
 
 ## Overview
 
