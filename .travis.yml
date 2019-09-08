@@ -27,3 +27,7 @@ before_script:
 - export SBT_OPTS="-Djava.io.tmpdir=$TRAVIS_BUILD_DIR/tmp"
 
 sudo: false
+
+branches:
+  only:
+    - master
