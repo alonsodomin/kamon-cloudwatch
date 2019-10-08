@@ -29,7 +29,7 @@ publishTo := Some(
   else Opts.resolver.sonatypeStaging
 )
 
-pomExtra := 
+pomExtra :=
   <url>https://www.github.com/alonsodomin/kamon-cloudwatch</url>
   <developers>
     <developer>
@@ -56,17 +56,16 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges
 )
 
-val kamonVersion   = "2.0.0"
+val kamonVersion   = "2.0.1"
 val jacksonVersion = "2.9.6"
-val kamonCore      = "io.kamon"               %% "kamon-core"              % kamonVersion
-val kamonTestkit   = "io.kamon"               %% "kamon-testkit"           % kamonVersion
-val cloudwatch     = "com.amazonaws"          %  "aws-java-sdk-cloudwatch" % "1.11.627" 
-val wiremock       = "com.github.tomakehurst" %  "wiremock"                % "2.24.1"
-
+val kamonCore      = "io.kamon" %% "kamon-core" % kamonVersion
+val kamonTestkit   = "io.kamon" %% "kamon-testkit" % kamonVersion
+val cloudwatch     = "com.amazonaws" % "aws-java-sdk-cloudwatch" % "1.11.647"
+val wiremock       = "com.github.tomakehurst" % "wiremock" % "2.25.0"
 
 libraryDependencies ++=
   compileScope(kamonCore, cloudwatch) ++
-  testScope(scalatest, kamonTestkit, wiremock, slf4jApi, logbackClassic)
+    testScope(scalatest, kamonTestkit, wiremock, slf4jApi, logbackClassic)
 
 resolvers += Resolver.bintrayRepo("kamon-io", "releases")
 

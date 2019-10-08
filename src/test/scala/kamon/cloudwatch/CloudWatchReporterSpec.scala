@@ -24,7 +24,6 @@ object CloudWatchReporterSpec {
     """kamon.cloudwatch {
       |  namespace = kamon-cloudwatch-test
       |  batch-size = 20
-      |  send-metrics = true
       |  async-threads = 5
       |}""".stripMargin
   )
@@ -33,7 +32,9 @@ object CloudWatchReporterSpec {
 class CloudWatchReporterSpec extends FlatSpec with Matchers {
   import CloudWatchReporterSpec._
 
-  def withCloudWatch(config: Config = ConfigFactory.load())(testCode: (Stubbing, CloudWatchReporter) => Any): Unit = {
+  def withCloudWatch(
+      config: Config = ConfigFactory.load()
+  )(testCode: (Stubbing, CloudWatchReporter) => Any): Unit = {
     val fixture = new Fixture(config)
     try {
       testCode(fixture.cloudWatch, fixture.reporter)
@@ -49,13 +50,18 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
       .build()
 
     val expectedInteraction = post("/")
-      .withRequestBody(cloudWatchBody(
-        "Action"                         -> "PutMetricData",
-        "Namespace"                      -> "kamon-cloudwatch-test",
-        "MetricData.member.1.MetricName" -> "foo",
-        "MetricData.member.1.Value"      -> "23.0",
-        "MetricData.member.1.Unit"       -> "Count"
-      )).willReturn(aResponse().withBody("{}").withStatus(200))
+      .withRequestBody(
+        cloudWatchBody(
+          "Action"                                        -> "PutMetricData",
+          "Namespace"                                     -> "kamon-cloudwatch-test",
+          "MetricData.member.1.MetricName"                -> "foo",
+          "MetricData.member.1.Value"                     -> "23.0",
+          "MetricData.member.1.Unit"                      -> "Count",
+          "MetricData.member.1.Dimensions.member.1.Name"  -> "tag",
+          "MetricData.member.1.Dimensions.member.1.Value" -> "mytag"
+        )
+      )
+      .willReturn(aResponse().withBody("{}").withStatus(200))
 
     stub.givenThat(expectedInteraction)
 
@@ -74,10 +80,12 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
     }
 
     val reporter: CloudWatchReporter = {
-      val endpoint = ConfigFactory.parseMap(Map(
-        "kamon.cloudwatch.service-endpoint" -> s"http://localhost:${cloudWatch.port()}",
-        "kamon.cloudwatch.region"           -> "us-west-1"
-      ).asJava)
+      val endpoint = ConfigFactory.parseMap(
+        Map(
+          "kamon.cloudwatch.service-endpoint" -> s"http://localhost:${cloudWatch.port()}",
+          "kamon.cloudwatch.region"           -> "us-west-1"
+        ).asJava
+      )
 
       val r = new CloudWatchReporter(TestClock)
       r.reconfigure(endpoint.withFallback(config))
@@ -90,21 +98,23 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
     new CloudWatchBodyPattern(Map(keys: _*))
 
   class CloudWatchBodyPattern(params: Map[String, String])
-    extends StringValuePattern(params.map { case (k,v) => s"$k=$v"}.mkString("&")) {
+      extends StringValuePattern(params.map { case (k, v) => s"$k=$v" }.mkString("&")) {
 
-      override def `match`(body: String): MatchResult = {
-        def keyValue(expr: String): Option[(String, String)] = {
-          val pairs = expr.split("=")
-          if (pairs.size != 2) None
-          else Some(pairs(0) -> pairs(1))
-        }
-        val keyValuePairs = body.split("&").flatMap(keyValue).toMap
-
-        println(keyValuePairs)
-
-        MatchResult.of(params.forall { case (k,v) => keyValuePairs.get(k).fold(false)(_ == v) })
+    override def `match`(body: String): MatchResult = {
+      def keyValue(expr: String): Option[(String, String)] = {
+        val pairs = expr.split("=")
+        if (pairs.size != 2) None
+        else Some(pairs(0) -> pairs(1))
       }
+      val keyValuePairs = body.split("&").flatMap(keyValue).toMap
 
+      println(keyValuePairs)
+
+      MatchResult.of(params.forall {
+        case (k, v) => keyValuePairs.get(k).fold(false)(_ == v)
+      })
     }
+
+  }
 
 }

@@ -13,15 +13,16 @@ import kamon.tag.TagSet
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Success, Failure}
 
 final case class Configuration(
-  nameSpace: String,
-  region: Option[String],
-  batchSize: Int,
-  sendMetrics: Boolean,
-  numThreads: Int,
-  serviceEndpoint: Option[String],
-  includeEnvironmentTags: Boolean
+    nameSpace: String,
+    region: Option[String],
+    batchSize: Int,
+    numThreads: Int,
+    serviceEndpoint: Option[String],
+    includeEnvironmentTags: Boolean
 )
 
 object Configuration {
@@ -30,37 +31,38 @@ object Configuration {
     val Namespace              = "namespace"
     val BatchSize              = "batch-size"
     val Region                 = "region"
-    val SendMetrics            = "send-metrics"
     val NumThreads             = "async-threads"
     val ServiceEndpoint        = "service-endpoint"
     val IncludeEnvironmentTags = "include-environment-tags"
   }
 
   def fromConfig(config: Config): Configuration = {
-    def opt[A](path: String, f: Config => A): Option[A] = {
+    def opt[A](path: String, f: Config => A): Option[A] =
       if (config.hasPath(path)) Option(f(config))
       else None
-    }
 
-    val nameSpace      = config.getString(settings.Namespace)
-    val region         = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
-    val batchSize      = config.getInt(settings.BatchSize)
-    val sendMetrics    = config.getBoolean(settings.SendMetrics)
-    val numThreads     = config.getInt(settings.NumThreads)
-    val endpoint       = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint)).filterNot(_.isEmpty)
-    val includeEnvTags = opt(settings.IncludeEnvironmentTags, _.getBoolean(settings.IncludeEnvironmentTags)).getOrElse(false)
+    val nameSpace  = config.getString(settings.Namespace)
+    val region     = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
+    val batchSize  = config.getInt(settings.BatchSize)
+    val numThreads = config.getInt(settings.NumThreads)
+    val endpoint = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint))
+      .filterNot(_.isEmpty)
+    val includeEnvTags =
+      opt(settings.IncludeEnvironmentTags, _.getBoolean(settings.IncludeEnvironmentTags))
+        .getOrElse(false)
 
-    Configuration(nameSpace, region, batchSize, sendMetrics, numThreads, endpoint, includeEnvTags)
+    Configuration(nameSpace, region, batchSize, numThreads, endpoint, includeEnvTags)
   }
 
 }
 
 final class CloudWatchModuleFactory extends ModuleFactory {
-  override def create(settings: ModuleFactory.Settings): CloudWatchReporter = new CloudWatchReporter()
+  override def create(settings: ModuleFactory.Settings): CloudWatchReporter =
+    new CloudWatchReporter()
 }
 
 final class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReporter {
-  private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
+  private[this] val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   def this() = this(Clock.systemUTC())
 
@@ -92,12 +94,14 @@ final class CloudWatchReporter private[cloudwatch] (clock: Clock) extends Metric
 
   override def reportPeriodSnapshot(snapshot: PeriodSnapshot): Unit = {
     val config = configuration.get
+    val metrics =
+      datums(snapshot, CloudWatchReporter.environmentTags(config)).grouped(config.batchSize)
+    Future.traverse(metrics)(shipper.shipMetrics(config.nameSpace, _)).onComplete {
+      case Success(_) =>
+        logger.debug("Metrics shipment has completed successfully.")
 
-    if (config.sendMetrics) {
-      val metrics = datums(snapshot, CloudWatchReporter.environmentTags(config))
-      metrics.grouped(config.batchSize).foreach(batch =>
-        shipper.shipMetrics(config.nameSpace, batch)
-      )
+      case Failure(exception) =>
+        logger.warn("Could not ship metrics to CloudWatch", exception)
     }
   }
 
@@ -110,8 +114,7 @@ final class CloudWatchReporter private[cloudwatch] (clock: Clock) extends Metric
 
 object CloudWatchReporter {
 
-  private def environmentTags(config: Configuration): TagSet = {
+  private def environmentTags(config: Configuration): TagSet =
     if (config.includeEnvironmentTags) Kamon.environment.tags else TagSet.Empty
-  }
 
 }

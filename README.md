@@ -18,7 +18,7 @@ The following table maps Kamon core version with the version of this library:
 | Kamon Core | Kamon CloudWatch | Scala          | JDK  |
 |-----------:| ----------------:| --------------:|-----:|
 |      1.0.0 |            1.0.0 | 2.10,2.11,2.12 | 1.8+ |
-|      2.0.0 |            1.1.0 | 2.11,2.12,2.13 | 1.8+ |
+|      2.0.0 |            1.1.x | 2.11,2.12,2.13 | 1.8+ |
 
 ## Getting Started
 
@@ -55,9 +55,6 @@ kamon {
 
     # batch size of data when send to Cloudwatch    
     batch-size = 20
-
-    # only logs metrics to file without shipping out to Cloudwatch if it is false
-    send-metrics = true
 
     # how many threads will be assigned to the pool that does the shipment of metrics
     async-threads = 5
