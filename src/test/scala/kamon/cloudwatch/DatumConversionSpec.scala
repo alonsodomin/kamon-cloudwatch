@@ -40,7 +40,10 @@ class DatumConversionSpec extends FlatSpec with Matchers {
 
   it must "populate percentages" in {
     val snapshot = PeriodSnapshotBuilder()
-      .withCounter(MetricSnapshotBuilder.counter("foo", "", TagSet.Empty, MeasurementUnit.percentage, 39))
+      .withCounter(
+        MetricSnapshotBuilder
+          .counter("foo", "", TagSet.Empty, MeasurementUnit.percentage, 39)
+      )
       .build()
 
     val convertedDatums = datums(snapshot, TagSet.Empty)
@@ -50,7 +53,10 @@ class DatumConversionSpec extends FlatSpec with Matchers {
 
   it must "attach user tags" in {
     val snapshot = PeriodSnapshotBuilder()
-      .withCounter(MetricSnapshotBuilder.counter("bar", TagSet.from(Map("tag" -> "tagValue")), 10))
+      .withCounter(
+        MetricSnapshotBuilder
+          .counter("bar", TagSet.from(Map("tag" -> "tagValue")), 10)
+      )
       .build()
 
     val expectedDimensions = List(
@@ -58,7 +64,8 @@ class DatumConversionSpec extends FlatSpec with Matchers {
     )
 
     val convertedDatums = datums(snapshot, TagSet.Empty)
-    val dimensions = convertedDatums.map(_.getDimensions.asScala).reduceRight(_ ++ _).toList
+    val dimensions =
+      convertedDatums.map(_.getDimensions.asScala).reduceRight(_ ++ _).toList
 
     dimensions shouldBe expectedDimensions
   }
@@ -73,7 +80,8 @@ class DatumConversionSpec extends FlatSpec with Matchers {
     )
 
     val convertedDatums = datums(snapshot, TagSet.from(Map("quxx" -> "bar")))
-    val dimensions = convertedDatums.map(_.getDimensions.asScala).reduceRight(_ ++ _).toList
+    val dimensions =
+      convertedDatums.map(_.getDimensions.asScala).reduceRight(_ ++ _).toList
 
     dimensions shouldBe expectedDimensions
   }

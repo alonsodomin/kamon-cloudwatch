@@ -15,11 +15,13 @@ import scala.util.control.NonFatal
 private[cloudwatch] class MetricsShipper {
   import AmazonAsync._
 
-  private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
+  private val logger =
+    LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
   // Kamon 1.0 requires to support hot-reconfiguration, which forces us to use an
   // AtomicReference here and hope for the best
-  private val client: AtomicReference[AmazonCloudWatchAsync] = new AtomicReference()
+  private val client: AtomicReference[AmazonCloudWatchAsync] =
+    new AtomicReference()
 
   def reconfigure(configuration: Configuration): Unit = {
     val oldClient = client.getAndSet(AmazonAsync.buildClient(configuration))
@@ -35,22 +37,24 @@ private[cloudwatch] class MetricsShipper {
     }
   }
 
-  def shipMetrics(nameSpace: String, datums: MetricDatumBatch)(implicit ec: ExecutionContext): Future[Unit] = {
+  def shipMetrics(nameSpace: String, datums: MetricDatumBatch)(
+      implicit ec: ExecutionContext
+  ): Future[Unit] = {
     implicit val currentClient: AmazonCloudWatchAsync = client.get
-    datums.put(nameSpace)
-      .map(result => logger.debug(s"Succeeded to push metrics to Cloudwatch: $result"))
+    datums
+      .put(nameSpace)
+      .map(result => logger.debug(s"Succeeded to push metric batch to Cloudwatch: $result"))
       .recover {
         case error: Exception =>
-          logger.warn(s"Failed to send metrics to Cloudwatch ${error.getMessage}")
+          logger.warn(s"Failed to send metric batch to Cloudwatch: ${error.getMessage}")
       }
   }
 
-  private[this] def disposeClient(client: AmazonCloudWatchAsync): Unit = {
+  private[this] def disposeClient(client: AmazonCloudWatchAsync): Unit =
     try {
       client.shutdown()
     } catch {
       case NonFatal(_) => // ignore exception
     }
-  }
 
 }

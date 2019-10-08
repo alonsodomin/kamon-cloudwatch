@@ -19,14 +19,16 @@ import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
 private[cloudwatch] object AmazonAsync {
-  private val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
+  private val logger =
+    LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
-  private val DefaultAwsCredentialsProvider: AWSCredentialsProvider = new AWSCredentialsProviderChain(
-    new EnvironmentVariableCredentialsProvider,
-    new ProfileCredentialsProvider(),
-    InstanceProfileCredentialsProvider.getInstance(),
-    new EC2ContainerCredentialsProviderWrapper
-  )
+  private val DefaultAwsCredentialsProvider: AWSCredentialsProvider =
+    new AWSCredentialsProviderChain(
+      new EnvironmentVariableCredentialsProvider,
+      new ProfileCredentialsProvider(),
+      InstanceProfileCredentialsProvider.getInstance(),
+      new EC2ContainerCredentialsProviderWrapper
+    )
 
   def buildClient(configuration: Configuration): AmazonCloudWatchAsync = {
     val chosenRegion: Option[Regions] = {
@@ -37,7 +39,8 @@ private[cloudwatch] object AmazonAsync {
 
     // async aws client uses a thread pool that reuses a fixed number of threads
     // operating off a shared unbounded queue.
-    val baseBuilder = AmazonCloudWatchAsyncClientBuilder.standard()
+    val baseBuilder = AmazonCloudWatchAsyncClientBuilder
+      .standard()
       .withCredentials(DefaultAwsCredentialsProvider)
       .withExecutorFactory(new ExecutorFactory {
         override def newExecutor(): ExecutorService =
@@ -49,34 +52,41 @@ private[cloudwatch] object AmazonAsync {
       region       <- chosenRegion
     } yield new EndpointConfiguration(endpointName, region.getName)
 
-    endpointConfig.map(baseBuilder.withEndpointConfiguration)
+    endpointConfig
+      .map(baseBuilder.withEndpointConfiguration)
       .orElse(chosenRegion.map(baseBuilder.withRegion))
       .getOrElse(baseBuilder)
       .build()
   }
 
-  private def asyncRequest[Arg, Req <: AmazonWebServiceRequest, Res](asyncArg: Arg)
-      (asyncOp: (Arg, AsyncHandler[Req, Res]) => JFuture[Res]): Future[Res] = {
+  private def asyncRequest[Req <: AmazonWebServiceRequest, Res](
+      request: Req
+  )(send: (Req, AsyncHandler[Req, Res]) => JFuture[Res]): Future[Res] = {
 
     val promise: Promise[Res] = Promise[Res]
     val handler = new AsyncHandler[Req, Res] {
       override def onError(exception: Exception): Unit =
-        promise.failure(new CancellationException(s"AWS async command is cancelled: ${exception.getMessage}"))
-      override def onSuccess(request: Req, result: Res): Unit = promise.complete(Try(result))
+        promise.failure(
+          new CancellationException(s"AWS async command is cancelled: ${exception.getMessage}")
+        )
+      override def onSuccess(request: Req, result: Res): Unit =
+        promise.complete(Try(result))
     }
-    asyncOp(asyncArg, handler)
+
+    send(request, handler)
     promise.future
   }
 
   implicit class MetricsAsyncOps(data: MetricDatumBatch) {
 
     def put(nameSpace: String)(
-      implicit client: AmazonCloudWatchAsync
+        implicit client: AmazonCloudWatchAsync
     ): Future[AmazonWebServiceResult[ResponseMetadata]] = {
       logger.debug("Sending {} metrics to namespace {}.", data.size, nameSpace)
-      asyncRequest(new PutMetricDataRequest()
-        .withNamespace(nameSpace)
-        .withMetricData(data.asJava)
+      asyncRequest(
+        new PutMetricDataRequest()
+          .withNamespace(nameSpace)
+          .withMetricData(data.asJava)
       )(client.putMetricDataAsync)
     }
 
