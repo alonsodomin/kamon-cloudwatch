@@ -39,23 +39,6 @@ pomExtra :=
     </developer>
   </developers>
 
-releaseCrossBuild := true
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  releaseStepCommandAndRemaining("+test"),
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  releaseStepCommandAndRemaining("+publishSigned"),
-  setNextVersion,
-  commitNextVersion,
-  releaseStepCommand("sonatypeReleaseAll"),
-  pushChanges
-)
-
 val kamonVersion   = "2.0.1"
 val jacksonVersion = "2.9.6"
 val kamonCore      = "io.kamon" %% "kamon-core" % kamonVersion
