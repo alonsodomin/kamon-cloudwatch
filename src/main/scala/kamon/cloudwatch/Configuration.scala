@@ -12,6 +12,7 @@ final case class Configuration(
 )
 
 object Configuration {
+  final val Namespace = "kamon.cloudwatch"
 
   private object settings {
     val Namespace              = "namespace"
@@ -22,7 +23,9 @@ object Configuration {
     val IncludeEnvironmentTags = "include-environment-tags"
   }
 
-  def fromConfig(config: Config): Configuration = {
+  def fromConfig(topLevelCfg: Config): Configuration = {
+    val config = topLevelCfg.getConfig(Namespace)
+
     def opt[A](path: String, f: Config => A): Option[A] =
       if (config.hasPath(path)) Option(f(config))
       else None

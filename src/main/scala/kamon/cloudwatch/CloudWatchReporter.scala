@@ -21,7 +21,7 @@ final class CloudWatchModuleFactory extends ModuleFactory {
 
   override def create(settings: ModuleFactory.Settings): CloudWatchReporter = {
     logger.info("Starting the Kamon CloudWatch reporter.")
-    val cfg = CloudWatchReporter.readConfiguration(settings.config)
+    val cfg = Configuration.fromConfig(settings.config)
     new CloudWatchReporter(cfg)
   }
 }
@@ -35,15 +35,9 @@ final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: C
   def this(cfg: Configuration) = this(cfg, Clock.systemUTC())
 
   private[this] val configuration: AtomicReference[Configuration] =
-    new AtomicReference()
+    new AtomicReference(cfg)
 
   private[this] val shipper: MetricsShipper = new MetricsShipper()
-
-  def start(): Unit = {
-    logger.info("Starting the Kamon CloudWatch reporter.")
-    configuration.set(readConfiguration(Kamon.config()))
-    shipper.reconfigure(configuration.get())
-  }
 
   override def stop(): Unit = {
     logger.info("Shutting down the Kamon CloudWatch reporter.")
@@ -52,7 +46,7 @@ final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: C
 
   override def reconfigure(config: Config): Unit = {
     val current = configuration.get
-    if (configuration.compareAndSet(current, readConfiguration(config))) {
+    if (configuration.compareAndSet(current, Configuration.fromConfig(config))) {
       shipper.reconfigure(configuration.get)
       logger.info("Configuration reloaded successfully.")
     } else {
@@ -79,10 +73,5 @@ object CloudWatchReporter {
 
   private def environmentTags(config: Configuration): TagSet =
     if (config.includeEnvironmentTags) Kamon.environment.tags else TagSet.Empty
-
-  private[cloudwatch] def readConfiguration(config: Config): Configuration = {
-    val cloudWatchConfig = config.getConfig("kamon.cloudwatch")
-    Configuration.fromConfig(cloudWatchConfig)
-  }
 
 }
