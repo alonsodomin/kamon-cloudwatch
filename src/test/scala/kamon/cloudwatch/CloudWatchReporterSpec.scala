@@ -87,9 +87,8 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
         ).asJava
       )
 
-      val r = new CloudWatchReporter(Configuration.fromConfig(config), TestClock)
-      r.reconfigure(endpoint.withFallback(config))
-      r
+      val testConfig = Configuration.fromConfig(endpoint.withFallback(config))
+      new CloudWatchReporter(testConfig, TestClock)
     }
 
   }

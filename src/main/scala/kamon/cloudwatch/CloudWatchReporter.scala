@@ -37,7 +37,7 @@ final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: C
   private[this] val configuration: AtomicReference[Configuration] =
     new AtomicReference(cfg)
 
-  private[this] val shipper: MetricsShipper = new MetricsShipper()
+  private[this] val shipper: MetricsShipper = new MetricsShipper(cfg)
 
   override def stop(): Unit = {
     logger.info("Shutting down the Kamon CloudWatch reporter.")

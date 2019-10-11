@@ -12,16 +12,16 @@ import scala.util.control.NonFatal
 /**
   * Ship-and-forget. Let the future to process the actual shipment to Cloudwatch.
   */
-private[cloudwatch] class MetricsShipper {
+private[cloudwatch] class MetricsShipper(configuration: Configuration) {
   import AmazonAsync._
 
   private val logger =
     LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
-  // Kamon 1.0 requires to support hot-reconfiguration, which forces us to use an
+  // Kamon 1.0+ requires to support hot-reconfiguration, which forces us to use an
   // AtomicReference here and hope for the best
   private val client: AtomicReference[AmazonCloudWatchAsync] =
-    new AtomicReference()
+    new AtomicReference(AmazonAsync.buildClient(configuration))
 
   def reconfigure(configuration: Configuration): Unit = {
     val oldClient = client.getAndSet(AmazonAsync.buildClient(configuration))
