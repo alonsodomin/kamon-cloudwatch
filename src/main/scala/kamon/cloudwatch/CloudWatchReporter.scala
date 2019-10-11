@@ -56,8 +56,11 @@ final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: C
 
   override def reportPeriodSnapshot(snapshot: PeriodSnapshot): Unit = {
     val config = configuration.get
-    val metrics =
-      datums(snapshot, CloudWatchReporter.environmentTags(config)).grouped(config.batchSize)
+    val metrics = datums(
+      snapshot,
+      CloudWatchReporter.environmentTags(config)
+    ).grouped(config.batchSize)
+
     Future.traverse(metrics)(shipper.shipMetrics(config.nameSpace, _)).onComplete {
       case Success(_) =>
         logger.debug("Metrics shipment has completed successfully.")
