@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <Async name="async" blocking="false" includeLocation="true">
+            <AppenderRef ref="console" />
+        </Async>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="async"/>
+        </Root>
+
+        <Logger name="kamon.cloudwatch" level="DEBUG" />
+    </Loggers>
+</Configuration>

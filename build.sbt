@@ -65,15 +65,16 @@ publishTo := Some(
 publishMavenStyle := true
 publishArtifact in Test := false
 
-val kamonVersion = "2.0.1"
 libraryDependencies ++= Seq(
-  "io.kamon"               %% "kamon-core"             % kamonVersion,
-  "io.kamon"               %% "kamon-testkit"          % kamonVersion % Test,
-  "org.slf4j"              % "slf4j-api"               % "1.7.28",
-  "com.amazonaws"          % "aws-java-sdk-cloudwatch" % "1.11.650",
-  "org.scalatest"          %% "scalatest"              % "3.0.8" % Test,
-  "com.github.tomakehurst" % "wiremock"                % "2.25.0" % Test,
-  "ch.qos.logback"         % "logback-classic"         % "1.2.3" % Test
+  "io.kamon"               %% "kamon-core"             % Versions.kamon,
+  "io.kamon"               %% "kamon-testkit"          % Versions.kamon % Test,
+  "org.slf4j"              % "slf4j-api"               % Versions.slf4j,
+  "com.amazonaws"          % "aws-java-sdk-cloudwatch" % Versions.aws,
+  "org.scalatest"          %% "scalatest"              % Versions.scalatest % Test,
+  "com.github.tomakehurst" % "wiremock"                % Versions.wiremock % Test,
+  "org.apache.logging.log4j"    % "log4j-core"                % Versions.log4j,
+  "org.apache.logging.log4j"    % "log4j-api"                 % Versions.log4j,
+  "org.apache.logging.log4j"    % "log4j-slf4j-impl"          % Versions.log4j
 )
 
 unmanagedSourceDirectories in Compile += {

@@ -40,7 +40,7 @@ class CloudWatchReporterSpec extends FlatSpec with Matchers {
       testCode(fixture.cloudWatch, fixture.reporter)
     } finally {
       fixture.reporter.stop()
-      fixture.cloudWatch.shutdown()
+      fixture.cloudWatch.stop()
     }
   }
 
