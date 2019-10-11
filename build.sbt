@@ -12,7 +12,6 @@
  * and limitations under the License.
  * =========================================================================================
  */
-import ReleaseTransformations._
 
 name := "kamon-cloudwatch"
 description := "Kamon extension to publish metrics into AWS CloudWatch"
@@ -21,7 +20,41 @@ startYear := Some(2018)
 organization := "com.github.alonsodomin"
 organizationName := "A. Alonso Dominguez"
 
-bintrayOrganization := None
+homepage := Some(url("https://github.com/alonsodomin/kamon-cloudwatch"))
+
+licenses += (("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
+scalacOptions := Seq(
+  "-encoding",
+  "utf8",
+  "-g:vars",
+  "-feature",
+  "-unchecked",
+  "-deprecation",
+  "-language:postfixOps",
+  "-language:implicitConversions",
+  "-Xlog-reflective-calls",
+  "-Ywarn-dead-code"
+)
+
+javacOptions := Seq(
+  "-Xlint:-options"
+)
+
+resolvers += Resolver.bintrayRepo("kamon-io", "releases")
+
+scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/alonsodomin/kamon-cloudwatch"),
+    "scm:git:git@github.com:alonsodomin/kamon-cloudwatch.git"
+  )
+)
+developers += Developer(
+  "alonsodomin",
+  "A. Alonso Dominguez",
+  "",
+  url("https://github.com/alonsodomin")
+)
+
 sonatypeProfileName := "com.github.alonsodomin"
 
 publishTo := Some(
@@ -29,28 +62,19 @@ publishTo := Some(
   else Opts.resolver.sonatypeStaging
 )
 
-pomExtra :=
-  <url>https://www.github.com/alonsodomin/kamon-cloudwatch</url>
-  <developers>
-    <developer>
-      <id>alonsodomin</id>
-      <name>A. Alonso Dominguez</name>
-      <url>https://github.com/alonsodomin</url>
-    </developer>
-  </developers>
+publishMavenStyle := true
+publishArtifact in Test := false
 
-val kamonVersion   = "2.0.1"
-val jacksonVersion = "2.9.6"
-val kamonCore      = "io.kamon" %% "kamon-core" % kamonVersion
-val kamonTestkit   = "io.kamon" %% "kamon-testkit" % kamonVersion
-val cloudwatch     = "com.amazonaws" % "aws-java-sdk-cloudwatch" % "1.11.647"
-val wiremock       = "com.github.tomakehurst" % "wiremock" % "2.25.0"
-
-libraryDependencies ++=
-  compileScope(kamonCore, cloudwatch) ++
-    testScope(scalatest, kamonTestkit, wiremock, slf4jApi, logbackClassic)
-
-resolvers += Resolver.bintrayRepo("kamon-io", "releases")
+val kamonVersion = "2.0.1"
+libraryDependencies ++= Seq(
+  "io.kamon"               %% "kamon-core"             % kamonVersion,
+  "io.kamon"               %% "kamon-testkit"          % kamonVersion % Test,
+  "org.slf4j"              % "slf4j-api"               % "1.7.28",
+  "com.amazonaws"          % "aws-java-sdk-cloudwatch" % "1.11.650",
+  "org.scalatest"          %% "scalatest"              % "3.0.8" % Test,
+  "com.github.tomakehurst" % "wiremock"                % "2.25.0" % Test,
+  "ch.qos.logback"         % "logback-classic"         % "1.2.3" % Test
+)
 
 unmanagedSourceDirectories in Compile += {
   val sourceDir = (sourceDirectory in Compile).value
