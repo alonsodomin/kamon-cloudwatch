@@ -66,15 +66,15 @@ publishMavenStyle := true
 publishArtifact in Test := false
 
 libraryDependencies ++= Seq(
-  "io.kamon"               %% "kamon-core"             % Versions.kamon,
-  "io.kamon"               %% "kamon-testkit"          % Versions.kamon % Test,
-  "org.slf4j"              % "slf4j-api"               % Versions.slf4j,
-  "com.amazonaws"          % "aws-java-sdk-cloudwatch" % Versions.aws,
-  "org.scalatest"          %% "scalatest"              % Versions.scalatest % Test,
-  "com.github.tomakehurst" % "wiremock"                % Versions.wiremock % Test,
-  "org.apache.logging.log4j"    % "log4j-core"                % Versions.log4j,
-  "org.apache.logging.log4j"    % "log4j-api"                 % Versions.log4j,
-  "org.apache.logging.log4j"    % "log4j-slf4j-impl"          % Versions.log4j
+  "io.kamon"                 %% "kamon-core"             % Versions.kamon,
+  "io.kamon"                 %% "kamon-testkit"          % Versions.kamon % Test,
+  "org.slf4j"                % "slf4j-api"               % Versions.slf4j,
+  "com.amazonaws"            % "aws-java-sdk-cloudwatch" % Versions.aws,
+  "org.scalatest"            %% "scalatest"              % Versions.scalatest % Test,
+  "com.github.tomakehurst"   % "wiremock"                % Versions.wiremock % Test,
+  "org.apache.logging.log4j" % "log4j-core"              % Versions.log4j % Test,
+  "org.apache.logging.log4j" % "log4j-api"               % Versions.log4j % Test,
+  "org.apache.logging.log4j" % "log4j-slf4j-impl"        % Versions.log4j % Test
 )
 
 unmanagedSourceDirectories in Compile += {
