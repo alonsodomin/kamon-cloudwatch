@@ -16,55 +16,23 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Success, Failure}
 
-final case class Configuration(
-    nameSpace: String,
-    region: Option[String],
-    batchSize: Int,
-    numThreads: Int,
-    serviceEndpoint: Option[String],
-    includeEnvironmentTags: Boolean
-)
-
-object Configuration {
-
-  private object settings {
-    val Namespace              = "namespace"
-    val BatchSize              = "batch-size"
-    val Region                 = "region"
-    val NumThreads             = "async-threads"
-    val ServiceEndpoint        = "service-endpoint"
-    val IncludeEnvironmentTags = "include-environment-tags"
-  }
-
-  def fromConfig(config: Config): Configuration = {
-    def opt[A](path: String, f: Config => A): Option[A] =
-      if (config.hasPath(path)) Option(f(config))
-      else None
-
-    val nameSpace  = config.getString(settings.Namespace)
-    val region     = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
-    val batchSize  = config.getInt(settings.BatchSize)
-    val numThreads = config.getInt(settings.NumThreads)
-    val endpoint = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint))
-      .filterNot(_.isEmpty)
-    val includeEnvTags =
-      opt(settings.IncludeEnvironmentTags, _.getBoolean(settings.IncludeEnvironmentTags))
-        .getOrElse(false)
-
-    Configuration(nameSpace, region, batchSize, numThreads, endpoint, includeEnvTags)
-  }
-
-}
-
 final class CloudWatchModuleFactory extends ModuleFactory {
-  override def create(settings: ModuleFactory.Settings): CloudWatchReporter =
-    new CloudWatchReporter()
-}
-
-final class CloudWatchReporter private[cloudwatch] (clock: Clock) extends MetricReporter {
   private[this] val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
-  def this() = this(Clock.systemUTC())
+  override def create(settings: ModuleFactory.Settings): CloudWatchReporter = {
+    logger.info("Starting the Kamon CloudWatch reporter.")
+    val cfg = CloudWatchReporter.readConfiguration(settings.config)
+    new CloudWatchReporter(cfg)
+  }
+}
+
+final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: Clock)
+    extends MetricReporter {
+  import CloudWatchReporter._
+
+  private[this] val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
+
+  def this(cfg: Configuration) = this(cfg, Clock.systemUTC())
 
   private[this] val configuration: AtomicReference[Configuration] =
     new AtomicReference()
@@ -105,16 +73,16 @@ final class CloudWatchReporter private[cloudwatch] (clock: Clock) extends Metric
     }
   }
 
-  private[this] def readConfiguration(config: Config): Configuration = {
-    val cloudWatchConfig = config.getConfig("kamon.cloudwatch")
-    Configuration.fromConfig(cloudWatchConfig)
-  }
-
 }
 
 object CloudWatchReporter {
 
   private def environmentTags(config: Configuration): TagSet =
     if (config.includeEnvironmentTags) Kamon.environment.tags else TagSet.Empty
+
+  private[cloudwatch] def readConfiguration(config: Config): Configuration = {
+    val cloudWatchConfig = config.getConfig("kamon.cloudwatch")
+    Configuration.fromConfig(cloudWatchConfig)
+  }
 
 }
