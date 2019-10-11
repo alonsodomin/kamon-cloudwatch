@@ -1,33 +1,45 @@
 language: scala
 
+sudo: false
+
 cache:
   directories:
   - $HOME/.sbt/0.13/dependency
   - $HOME/.sbt/1.0/dependency
   - $HOME/.sbt/boot/scala*
   - $HOME/.sbt/launchers
-  - $HOME/.ivy2
+  - $HOME/.cache/coursier
 
-script:
-- sbt ++$TRAVIS_SCALA_VERSION! test
+jdk:
+- openjdk8
+- openjdk11
 
 scala:
 - 2.11.12
 - 2.12.9
 - 2.13.0
 
-jdk:
-- openjdk8
-- openjdk11
+before_install:
+- git fetch --tags
 
 before_script:
-- export AWS_SECRET_KEY=foo
-- export AWS_ACCESS_KEY_ID=bar
 - mkdir $TRAVIS_BUILD_DIR/tmp
 - export SBT_OPTS="-Djava.io.tmpdir=$TRAVIS_BUILD_DIR/tmp"
 
-sudo: false
+script:
+- sbt ++$TRAVIS_SCALA_VERSION! test
+
+stages:
+  - name: test
+  - name: release
+    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
+
+jobs:
+  include:
+    - stage: release
+      script: sbt ci-release
 
 branches:
   only:
     - master
+    - /v.+/
