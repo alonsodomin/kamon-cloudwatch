@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.{Future, Promise}
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
 private[cloudwatch] object AmazonAsync {
   private val logger =
@@ -59,18 +59,27 @@ private[cloudwatch] object AmazonAsync {
       .build()
   }
 
-  private def asyncRequest[Req <: AmazonWebServiceRequest, Res](
+  private def asyncRequest[Req <: AmazonWebServiceRequest, Res <: AmazonWebServiceResult[ResponseMetadata]](
       request: Req
-  )(send: (Req, AsyncHandler[Req, Res]) => JFuture[Res]): Future[Res] = {
+  )(send: (Req, AsyncHandler[Req, Res]) => JFuture[Res]): Future[Unit] = {
 
-    val promise: Promise[Res] = Promise[Res]
+    val promise: Promise[Unit] = Promise[Unit]
     val handler = new AsyncHandler[Req, Res] {
       override def onError(exception: Exception): Unit =
-        promise.failure(
-          new CancellationException(s"AWS async command is cancelled: ${exception.getMessage}")
-        )
-      override def onSuccess(request: Req, result: Res): Unit =
-        promise.complete(Try(result))
+        promise.failure(exception)
+
+      override def onSuccess(request: Req, res: Res): Unit = {
+        val result: Try[Unit] = {
+          if (res.getSdkHttpMetadata().getHttpStatusCode() >= 500) {
+            Failure(CloudWatchUnavailable)
+          } else if (res.getSdkHttpMetadata().getHttpStatusCode() >= 400) {
+            Failure(InvalidCloudWatchRequest(s"Received HTTP status code '${res.getSdkHttpMetadata().getHttpStatusCode()}' from CloudWatch API."))
+          } else {
+            Success(())
+          }
+        }
+        promise.complete(result)
+      }
     }
 
     send(request, handler)
@@ -81,7 +90,7 @@ private[cloudwatch] object AmazonAsync {
 
     def put(nameSpace: String)(
         implicit client: AmazonCloudWatchAsync
-    ): Future[AmazonWebServiceResult[ResponseMetadata]] = {
+    ): Future[Unit] = {
       logger.debug("Sending {} metrics to namespace {}.", data.size, nameSpace)
       asyncRequest(
         new PutMetricDataRequest()

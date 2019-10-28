@@ -66,7 +66,7 @@ final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: C
         logger.debug("Metrics shipment has completed successfully.")
 
       case Failure(exception) =>
-        logger.warn("Could not ship metrics to CloudWatch", exception)
+        logger.error("Unexpected error shipping metrics to CloudWatch!", exception)
     }
   }
 

@@ -28,16 +28,18 @@ Add library dependency to your `build.sbt`
 libraryDependencies += "com.github.alonsodomin" %% "kamon-cloudwatch" % "<version>"
 ```
 
-The module will be loaded automatically by Kamon 2.x. If using Kamon 1.x, you will need to register it manually:
+The module will be loaded automatically and you should see "_Starting the Kamon CloudWatch extension_" message in your logs output.
+
+> **Note:** Be sure the box in which this is going to be used, has the proper access credentials to send data to AWS CloudWatch. The preferred approach would be to either use an _InstanceProfile_ or roles in the case of ECS/Docker Containers. Another way would be to have the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set correctly.
+
+### Kamon 1.0 users
+
+If using Kamon 1.x, you will need to register it manually during application startup:
 
 ```scala
 val reporter = new CloudWatchReporter()
 Kamon.addReporter(reporter)
 ```
-
-You should see "_Starting the Kamon CloudWatch extension_" in your log output.
-
-Be sure the box in which this is going to be used, has the proper access credentials to send data to AWS CloudWatch. The preferred approach would be to either use an _InstanceProfile_ or roles in the case of ECS/Docker Containers. Another way would be to have the environment variables `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set correctly.
 
 ## Configuration
 
@@ -48,18 +50,18 @@ kamon {
   cloudwatch {
 
     # namespace is the AWS Metrics custom namespace
-    namespace = kamon-cloudwatch
+    namespace = <application name>
     
-    # AWS region, on ec2 region is fetched by getCurrentRegion command
+    # (Optional) AWS region, on ec2 region is fetched by getCurrentRegion command
     region = eu-west-1
 
-    # batch size of data when send to Cloudwatch    
+    # batch size of data when send to Cloudwatch. Default: 20
     batch-size = 20
 
-    # how many threads will be assigned to the pool that does the shipment of metrics
+    # how many threads will be assigned to the pool that does the shipment of metrics. Default: 5
     async-threads = 5
     
-    # whether to add Kamon environment tags to each of the metrics
+    # whether to add Kamon environment tags to each of the metrics. Default: false
     include-environment-tags = false
   }
 }

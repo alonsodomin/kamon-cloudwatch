@@ -41,12 +41,13 @@ private[cloudwatch] class MetricsShipper(configuration: Configuration) {
       implicit ec: ExecutionContext
   ): Future[Unit] = {
     implicit val currentClient: AmazonCloudWatchAsync = client.get
+    logger.debug("Sending batch of {} metrics to CloudWatch", datums.size)
     datums
       .put(nameSpace)
       .map(result => logger.debug(s"Succeeded to push metric batch to Cloudwatch: $result"))
       .recover {
-        case error: Exception =>
-          logger.warn(s"Failed to send metric batch to Cloudwatch: ${error.getMessage}")
+        case CloudWatchUnavailable =>
+          logger.warn("Failed to send metric batch to Cloudwatch. Service temporarily unavailable.")
       }
   }
 
