@@ -9,11 +9,12 @@ import kamon.metric.MeasurementUnit
 import kamon.tag.TagSet
 import kamon.testkit.MetricSnapshotBuilder
 
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.jdk.CollectionConverters._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class DatumConversionSpec extends FlatSpec with Matchers {
+class DatumConversionSpec extends AnyFlatSpec with Matchers {
 
   "datums" must "ignore distributions without samples" in {
     val snapshot = PeriodSnapshotBuilder()

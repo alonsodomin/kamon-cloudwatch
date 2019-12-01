@@ -13,9 +13,10 @@ import com.typesafe.config.{Config, ConfigFactory}
 import kamon.tag.TagSet
 import kamon.testkit.MetricSnapshotBuilder
 
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.jdk.CollectionConverters._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 object CloudWatchReporterSpec {
   final val TestClock: Clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)
@@ -29,7 +30,7 @@ object CloudWatchReporterSpec {
   )
 }
 
-class CloudWatchReporterSpec extends FlatSpec with Matchers {
+class CloudWatchReporterSpec extends AnyFlatSpec with Matchers {
   import CloudWatchReporterSpec._
 
   def withCloudWatch(
