@@ -28,7 +28,6 @@ final class CloudWatchModuleFactory extends ModuleFactory {
 
 final class CloudWatchReporter private[cloudwatch] (cfg: Configuration, clock: Clock)
     extends MetricReporter {
-  import CloudWatchReporter._
 
   private[this] val logger = LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 

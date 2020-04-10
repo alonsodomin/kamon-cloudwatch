@@ -1,6 +1,6 @@
 package kamon.cloudwatch
 
-import java.util.concurrent.{CancellationException, ExecutorService, Executors, Future => JFuture}
+import java.util.concurrent.{ExecutorService, Executors, Future => JFuture}
 
 import com.amazonaws.{AmazonWebServiceRequest, AmazonWebServiceResult, ResponseMetadata}
 import com.amazonaws.auth._
@@ -22,7 +22,7 @@ private[cloudwatch] object AmazonAsync {
   private val logger =
     LoggerFactory.getLogger(classOf[MetricsShipper].getPackage.getName)
 
-  private val DefaultAwsCredentialsProvider: AWSCredentialsProvider =
+  private lazy val DefaultAwsCredentialsProvider: AWSCredentialsProvider =
     new AWSCredentialsProviderChain(
       new EnvironmentVariableCredentialsProvider,
       new ProfileCredentialsProvider(),
@@ -37,11 +37,16 @@ private[cloudwatch] object AmazonAsync {
         .orElse(Option(Regions.getCurrentRegion).map(r => Regions.fromName(r.getName)))
     }
 
+    val staticCredentialProvider = for {
+      accessKey <- configuration.awsAccessKeyId
+      secretKey <- configuration.awsSecretKey
+    } yield (new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+
     // async aws client uses a thread pool that reuses a fixed number of threads
     // operating off a shared unbounded queue.
     val baseBuilder = AmazonCloudWatchAsyncClientBuilder
       .standard()
-      .withCredentials(DefaultAwsCredentialsProvider)
+      .withCredentials(staticCredentialProvider.getOrElse(DefaultAwsCredentialsProvider))
       .withExecutorFactory(new ExecutorFactory {
         override def newExecutor(): ExecutorService =
           Executors.newFixedThreadPool(configuration.numThreads)
@@ -59,7 +64,9 @@ private[cloudwatch] object AmazonAsync {
       .build()
   }
 
-  private def asyncRequest[Req <: AmazonWebServiceRequest, Res <: AmazonWebServiceResult[ResponseMetadata]](
+  private def asyncRequest[Req <: AmazonWebServiceRequest, Res <: AmazonWebServiceResult[
+    ResponseMetadata
+  ]](
       request: Req
   )(send: (Req, AsyncHandler[Req, Res]) => JFuture[Res]): Future[Unit] = {
 
@@ -73,7 +80,11 @@ private[cloudwatch] object AmazonAsync {
           if (res.getSdkHttpMetadata().getHttpStatusCode() >= 500) {
             Failure(CloudWatchUnavailable)
           } else if (res.getSdkHttpMetadata().getHttpStatusCode() >= 400) {
-            Failure(InvalidCloudWatchRequest(s"Received HTTP status code '${res.getSdkHttpMetadata().getHttpStatusCode()}' from CloudWatch API."))
+            Failure(
+              InvalidCloudWatchRequest(
+                s"Received HTTP status code '${res.getSdkHttpMetadata().getHttpStatusCode()}' from CloudWatch API."
+              )
+            )
           } else {
             Success(())
           }
