@@ -63,6 +63,15 @@ kamon {
     
     # whether to add Kamon environment tags to each of the metrics. Default: false
     include-environment-tags = false
+
+    # explicit aws access key and secret definition (optional)
+    # if not specified values fetched from one of the followings
+    #   * AWS_PROFILE env variable
+    #   * AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY env variables
+    #   * Amazon EC2 Instance Metadata
+    # access-key-id = ""
+    # secret-access-key = ""
+
   }
 }
 ```
