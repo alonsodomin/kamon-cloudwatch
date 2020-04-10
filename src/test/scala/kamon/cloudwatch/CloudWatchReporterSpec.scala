@@ -13,7 +13,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import kamon.tag.TagSet
 import kamon.testkit.MetricSnapshotBuilder
 
-
 import scala.jdk.CollectionConverters._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

@@ -8,7 +8,9 @@ final case class Configuration(
     batchSize: Int,
     numThreads: Int,
     serviceEndpoint: Option[String],
-    includeEnvironmentTags: Boolean
+    includeEnvironmentTags: Boolean,
+    awsAccessKeyId: Option[String],
+    awsSecretKey: Option[String]
 )
 
 object Configuration {
@@ -18,6 +20,8 @@ object Configuration {
     val Namespace              = "namespace"
     val BatchSize              = "batch-size"
     val Region                 = "region"
+    val AwsAccessKeyId         = "access-key-id"
+    val AwsSecretAccessKey     = "secret-access-key"
     val NumThreads             = "async-threads"
     val ServiceEndpoint        = "service-endpoint"
     val IncludeEnvironmentTags = "include-environment-tags"
@@ -26,21 +30,29 @@ object Configuration {
   def fromConfig(topLevelCfg: Config): Configuration = {
     val config = topLevelCfg.getConfig(Namespace)
 
-    def opt[A](path: String, f: Config => A): Option[A] =
-      if (config.hasPath(path)) Option(f(config))
+    def opt[A](path: String, f: Config => String => A): Option[A] =
+      if (config.hasPath(path)) Option(f(config)(path))
       else None
 
-    val nameSpace  = config.getString(settings.Namespace)
-    val region     = opt(settings.Region, _.getString(settings.Region)).filterNot(_.isEmpty)
-    val batchSize  = config.getInt(settings.BatchSize)
-    val numThreads = config.getInt(settings.NumThreads)
-    val endpoint = opt(settings.ServiceEndpoint, _.getString(settings.ServiceEndpoint))
-      .filterNot(_.isEmpty)
-    val includeEnvTags =
-      opt(settings.IncludeEnvironmentTags, _.getBoolean(settings.IncludeEnvironmentTags))
-        .getOrElse(false)
+    val nameSpace      = config.getString(settings.Namespace)
+    val region         = opt(settings.Region, _.getString).filterNot(_.isEmpty)
+    val awsAccessKeyId = opt(settings.AwsAccessKeyId, _.getString).filterNot(_.isEmpty)
+    val awsSecretKey   = opt(settings.AwsSecretAccessKey, _.getString).filterNot(_.isEmpty)
+    val batchSize      = config.getInt(settings.BatchSize)
+    val numThreads     = config.getInt(settings.NumThreads)
+    val endpoint       = opt(settings.ServiceEndpoint, _.getString).filterNot(_.isEmpty)
+    val includeEnvTags = opt(settings.IncludeEnvironmentTags, _.getBoolean).getOrElse(false)
 
-    Configuration(nameSpace, region, batchSize, numThreads, endpoint, includeEnvTags)
+    Configuration(
+      nameSpace,
+      region,
+      batchSize,
+      numThreads,
+      endpoint,
+      includeEnvTags,
+      awsAccessKeyId,
+      awsSecretKey
+    )
   }
 
 }
