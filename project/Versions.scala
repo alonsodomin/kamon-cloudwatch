@@ -4,5 +4,5 @@ object Versions {
   val kamon     = "2.1.1"
   val scalatest = "3.1.2"
   val slf4j     = "1.7.30"
-  val wiremock  = "2.25.1"
+  val wiremock  = "2.27.0"
 }
