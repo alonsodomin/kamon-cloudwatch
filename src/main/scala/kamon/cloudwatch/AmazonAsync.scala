@@ -26,6 +26,7 @@ private[cloudwatch] object AmazonAsync {
     new AWSCredentialsProviderChain(
       new EnvironmentVariableCredentialsProvider,
       new ProfileCredentialsProvider(),
+      new WebIdentityTokenCredentialsProvider,
       InstanceProfileCredentialsProvider.getInstance(),
       new EC2ContainerCredentialsProviderWrapper
     )
