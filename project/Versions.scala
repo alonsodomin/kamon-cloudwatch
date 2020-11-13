@@ -1,5 +1,5 @@
 object Versions {
-  val aws       = "1.11.899"
+  val aws       = "1.11.900"
   val log4j     = "2.14.0"
   val kamon     = "2.1.8"
   val scalatest = "3.2.3"
